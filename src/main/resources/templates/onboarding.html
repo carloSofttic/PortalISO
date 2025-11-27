@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Onboarding — Plataforma ISO</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}" />
+</head>
+
+<body>
+    <div class="wrapper">
+        <div class="card">
+            <div class="logo">Certificaciones ISO</div>
+            <h1>Bienvenido a tu Onboarding</h1>
+            <p class="intro">Completa la siguiente información para personalizar tu experiencia ISO.</p>
+
+            <form th:action="@{/onboarding}" method="post">
+                <div>
+                    <label for="nombreComercial">Nombre Comercial</label>
+                    <input type="text" id="nombreComercial" name="nombreComercial" 
+                        th:value="${nombreCompania}" readonly/>
+
+                </div>
+
+                <div>
+                    <label for="sector">Sector o Giro</label>
+                    <!-- Dropdown custom para Sector -->
+                    <div class="selectx" data-name="sectorCompania">
+                        <button type="button" class="selectx-toggle" aria-haspopup="listbox" aria-expanded="false">
+                            <span class="selectx-label">Selecciona…</span>
+                            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M7 10l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" />
+                            </svg>
+                        </button>
+                        <ul class="selectx-menu" role="listbox">
+                            <li class="selectx-option" role="option" th:each="sector : ${sectores}"
+                                th:data-value="${sector.id}" th:text="${sector.nombreSector}"></li>
+                        </ul>
+                        <!-- Valor real que se enviará al servidor -->
+                        <input type="hidden" name="sectorCompania" id="sectorCompania">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="isoSeleccionada">Norma ISO</label>
+                    <select id="isoSeleccionada" name="isoSeleccionada" required>
+                        <option value="">Selecciona un sector primero</option>
+                    </select>
+                </div>
+
+
+                <button type="submit">Continuar</button>
+            </form>
+
+            <div class="footer">© 2025 Certificaciones ISO — Plataforma ISO</div>
+        </div>
+    </div>
+
+    <script th:src="@{/js/app.js}"></script>
+
+</body>
+
+</html>

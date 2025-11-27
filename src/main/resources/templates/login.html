@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Iniciar sesión — Plataforma ISO</title>
+  <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+  <div class="wrapper">
+    <div class="card">
+      <div class="logo">Certificaciones ISO</div>
+      <h2>Iniciar sesión</h2>
+
+      <form th:action="@{/login}" method="post">
+        <div class="form-group">
+          <label>Usuario</label>
+          <input type="text" name="username" required>
+        </div>
+
+        <div class="form-group">
+          <label>Contraseña</label>
+          <input type="password" name="password" required>
+        </div>
+
+        <button type="submit">Entrar</button>
+
+        <p><a th:href="@{/register}" class="register-link">¿Aún no tienes cuenta? Regístrate aquí</a></p>
+
+
+        <p class="msg error" th:if="${param.error}">Credenciales incorrectas.</p>
+        <p class="msg logout" th:if="${param.logout}">Sesión cerrada correctamente.</p>
+      </form>
+
+      <div class="footer">
+        © 2025 Certificaciones ISO — Plataforma ISO
+      </div>
+    </div>
+  </div>
+</body>
+</html>
