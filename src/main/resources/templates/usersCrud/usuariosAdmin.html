@@ -1,99 +1,100 @@
 <!-- src/main/resources/templates/usuarios-admin.html -->
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
+
 <head>
   <meta charset="UTF-8">
-  <title>Administración de Usuarios</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Administración de Usuarios — Plataforma ISO</title>
 
+  <!-- CSRF para las peticiones AJAX -->
   <meta name="_csrf" th:content="${_csrf.token}"/>
   <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 
+  <!-- Mismo CSS del dashboard -->
+  <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+
+  <!-- Estilos específicos SOLO para esta pantalla de usuarios -->
   <style>
-    body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #f5f7fb;
-      margin: 0;
-      padding: 0;
-    }
-    .page {
-      max-width: 1150px;
-      margin: 2rem auto;
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.06);
-      padding: 1.5rem 2rem 2.5rem;
-    }
-    h1 {
-      margin-top: 0;
-      font-size: 1.6rem;
-      color: #1f2d3d;
-    }
-    .toolbar {
+    .users-page .users-toolbar {
       display: flex;
       gap: 1rem;
+      margin-top: 1rem;
       margin-bottom: 1rem;
       align-items: center;
       flex-wrap: wrap;
     }
-    .toolbar input[type="text"] {
+    .users-page .users-toolbar input[type="text"] {
       flex: 1;
+      min-width: 260px;
       padding: 0.5rem 0.75rem;
-      border: 1px solid #d0d7e2;
       border-radius: 8px;
-      font-size: 0.95rem;
+      border: 1px solid #1f2937;
+      background-color: #020817;
+      color: #e5e7eb;
     }
-    .btn {
+    .users-page .btn {
       border: none;
       border-radius: 8px;
       padding: 0.45rem 0.9rem;
       cursor: pointer;
       font-size: 0.9rem;
     }
-    .btn-primary { background: #2563eb; color: #fff; }
-    .btn-secondary { background: #e5e7eb; color: #111827; }
-    .btn-danger { background: #ef4444; color: #fff; }
+    .users-page .btn-primary { background: #22c55e; color: #0b1120; }
+    .users-page .btn-secondary { background: #111827; color: #e5e7eb; }
+    .users-page .btn-danger { background: #ef4444; color: #f9fafb; }
 
-    table {
+    .users-page .table-wrap {
+      overflow-x: auto;
+      margin-top: 0.5rem;
+    }
+    .users-page table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 0.5rem;
       font-size: 0.9rem;
     }
-    thead { background: #f3f4f6; }
-    th, td {
+    .users-page thead {
+      background: #020617;
+    }
+    .users-page th,
+    .users-page td {
       padding: 0.55rem 0.6rem;
-      border-bottom: 1px solid #e5e7eb;
+      border-bottom: 1px solid #1f2937;
       text-align: left;
     }
-    tbody tr:hover { background: #f9fafb; }
+    .users-page tbody tr:hover {
+      background: #020617;
+    }
 
-    .badge {
+    .users-page .badge {
       display: inline-block;
       padding: 0.15rem 0.45rem;
       border-radius: 999px;
       font-size: 0.75rem;
     }
-    .badge-role {
-      background: #e0f2fe;
-      color: #0369a1;
+    .users-page .badge-role {
+      background: #0ea5e9;
+      color: #0b1120;
     }
 
+    /* Modal */
     .modal-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(15,23,42,0.45);
+      background: rgba(15,23,42,0.75);
       display: none;
       align-items: center;
       justify-content: center;
       z-index: 50;
     }
     .modal {
-      background: #fff;
+      background: #020617;
       border-radius: 12px;
       padding: 1.5rem;
       max-width: 650px;
       width: 100%;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      border: 1px solid #1f2937;
     }
     .modal-header {
       display: flex;
@@ -101,8 +102,10 @@
       align-items: center;
       margin-bottom: 1rem;
     }
-    .modal-header h2 { margin: 0; font-size: 1.1rem; }
-
+    .modal-header h2 {
+      margin: 0;
+      font-size: 1.1rem;
+    }
     .modal-body {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -119,8 +122,10 @@
     .modal-body select {
       padding: 0.4rem 0.6rem;
       border-radius: 6px;
-      border: 1px solid #d1d5db;
+      border: 1px solid #1f2937;
       font-size: 0.9rem;
+      background-color: #020817;
+      color: #e5e7eb;
     }
     .modal-footer {
       margin-top: 1rem;
@@ -129,342 +134,557 @@
       gap: 0.5rem;
     }
     .error-msg {
-      color: #b91c1c;
+      color: #fca5a5;
       font-size: 0.85rem;
       margin-top: 0.25rem;
     }
   </style>
 </head>
+
 <body>
-<div class="page">
-  <h1>Administración de Usuarios</h1>
 
-  <div class="toolbar">
-    <input id="buscador" type="text" placeholder="Buscar por nombre, usuario, correo, rol...">
-    <button class="btn btn-secondary" id="btnRefrescar">Refrescar</button>
-    <button class="btn btn-primary" id="btnNuevo">+ Nuevo usuario</button>
+  <!-- Botón menú móvil -->
+  <button class="menu-toggle">☰</button>
+
+  <!-- LAYOUT PRINCIPAL -->
+  <div class="layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        Certificaciones ISO
+      </div>
+
+      <button class="sidebar-collapse-btn" type="button" title="Colapsar/expandir menú">⮜</button>
+
+      <nav class="sidebar-nav">
+
+        <!-- ADMINISTRADOR / SGI -->
+        <th:block th:if="${tipoUsuario == 'ADMINISTRADOR' or tipoUsuario == 'SGI'}">
+
+          <!-- Administrar usuarios (marcado como activo) -->
+          <a th:href="@{/admin/usuarios}"
+             class="item"
+             th:classappend="${active=='usuarios' ? ' active' : ''}">
+            <span class="icon">👥</span>
+            <span class="text">Administrar usuarios</span>
+          </a>
+
+          <a href="/licencias" class="item">
+            <span class="icon">🎫</span>
+            <span class="text">Asignar licencias</span>
+          </a>
+
+          <a href="#" class="item" th:classappend="${active=='dg' ? ' active' : ''}">
+            <span class="icon">🏛️</span>
+            <span class="text">Dirección General</span>
+          </a>
+
+          <a href="#" class="item" th:classappend="${active=='admin' ? ' active' : ''}">
+            <span class="icon">🛠️</span>
+            <span class="text">Líder administrador</span>
+          </a>
+
+          <a href="#" class="item" th:classappend="${active=='sgi' ? ' active' : ''}">
+            <span class="icon">🧩</span>
+            <span class="text">Líder de SGI</span>
+          </a>
+
+          <a href="#" class="item" th:classappend="${active=='calidad' ? ' active' : ''}">
+            <span class="icon">✅</span>
+            <span class="text">Líder de Calidad</span>
+          </a>
+
+          <a href="#" class="item" th:classappend="${active=='rh' ? ' active' : ''}">
+            <span class="icon">👤</span>
+            <span class="text">Líder de Recursos Humanos</span>
+          </a>
+
+          <a href="#" class="item" th:classappend="${active=='compras' ? ' active' : ''}">
+            <span class="icon">🛒</span>
+            <span class="text">Líder de Compras</span>
+          </a>
+
+          <a href="#" class="item" th:classappend="${active=='manto' ? ' active' : ''}">
+            <span class="icon">🔧</span>
+            <span class="text">Líder de Mantenimiento</span>
+          </a>
+
+          <a href="#" class="item" th:classappend="${active=='almacen' ? ' active' : ''}">
+            <span class="icon">📦</span>
+            <span class="text">Líder de Almacén</span>
+          </a>
+
+          <a href="#" class="item" th:classappend="${active=='oper' ? ' active' : ''}">
+            <span class="icon">⚙️</span>
+            <span class="text">Líder de Operaciones</span>
+          </a>
+
+          <a href="#" class="item" th:classappend="${active=='planeacion' ? ' active' : ''}">
+            <span class="icon">📈</span>
+            <span class="text">Líder de Planeación</span>
+          </a>
+
+          <a href="#" class="item" th:classappend="${active=='seg' ? ' active' : ''}">
+            <span class="icon">🦺</span>
+            <span class="text">Líder de seguridad e higiene</span>
+          </a>
+
+          <a href="#" class="item" th:classappend="${active=='dev' ? ' active' : ''}">
+            <span class="icon">💻</span>
+            <span class="text">Líder de Desarrollo</span>
+          </a>
+
+          <a href="#" class="item" th:classappend="${active=='ti' ? ' active' : ''}">
+            <span class="icon">💾</span>
+            <span class="text">Líder de TI</span>
+          </a>
+
+          <a href="#" class="item" th:classappend="${active=='fact' ? ' active' : ''}">
+            <span class="icon">🧾</span>
+            <span class="text">Líder de facturación y embarques</span>
+          </a>
+        </th:block>
+
+        <!-- LÍDERES -->
+        <th:block th:if="${tipoUsuario != 'ADMINISTRADOR' and tipoUsuario != 'SGI'}">
+          <a href="/archivos/nuevo" class="item">
+            <span class="icon">📝</span>
+            <span class="text">Crear archivo</span>
+          </a>
+          <a href="#" class="item">
+            <span class="icon">📊</span>
+            <span class="text">Mi progreso</span>
+          </a>
+          <a href="#" class="item">
+            <span class="icon">📁</span>
+            <span class="text">Documentos asignados</span>
+          </a>
+          <a href="#" class="item">
+            <span class="icon">✅</span>
+            <span class="text">Mis actividades</span>
+          </a>
+        </th:block>
+      </nav>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+
+      <!-- TOPBAR -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <span class="topbar-title">Administración de usuarios</span>
+        </div>
+
+        <div class="topbar-right">
+
+          <!-- Notificaciones -->
+          <div class="notifications">
+            <button class="icon-btn" type="button" title="Notificaciones">
+              🔔
+              <span class="badge">2</span>
+            </button>
+
+            <div class="notifications-panel">
+              <div class="notifications-header">
+                <span>Notificaciones</span>
+                <span>2 nuevas</span>
+              </div>
+
+              <div class="notification-item">
+                <div class="notification-title">Onboarding incompleto</div>
+                <div class="notification-body">
+                  Aún tienes pasos pendientes en el proceso inicial de la compañía.
+                </div>
+                <div class="notification-meta">Hace 10 min</div>
+              </div>
+
+              <div class="notification-item">
+                <div class="notification-title">Nueva tarea asignada</div>
+                <div class="notification-body">
+                  Tienes un nuevo documento para revisar y completar.
+                </div>
+                <div class="notification-meta">Hace 1 hora</div>
+              </div>
+
+              <div class="notifications-footer">
+                <a href="#">Ver todas</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Menú usuario -->
+          <div class="user-menu">
+            <div class="user-chip">
+              <span class="user-avatar">
+                <span th:text="${#strings.substring(vm.username,0,1)}">U</span>
+              </span>
+              <div class="user-info">
+                <span class="user-name" th:text="${vm.username}">Usuario</span>
+                <span class="user-role" th:text="${tipoUsuario}">ROL</span>
+              </div>
+            </div>
+
+            <div class="user-dropdown">
+              <a href="/perfil" class="dropdown-item">Mi perfil</a>
+              <a href="/configuracion" class="dropdown-item">Configuración</a>
+              <form th:action="@{/logout}" method="post" class="dropdown-item logout-form">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <button type="submit" class="logout-btn">Cerrar sesión</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- CONTENIDO -->
+      <div class="content-wrap">
+
+        <div th:if="${ok}" class="alert success" th:text="${ok}"></div>
+        <div th:if="${error}" class="alert error" th:text="${error}"></div>
+
+        <div class="card card-lg users-page">
+          <div class="title">Administración de Usuarios</div>
+          <div class="subtitle">Gestiona los usuarios de la compañía.</div>
+
+          <!-- Toolbar -->
+          <div class="users-toolbar">
+            <input id="buscador" type="text" placeholder="Buscar por nombre, usuario, correo, rol...">
+            <button class="btn btn-secondary" id="btnRefrescar">Refrescar</button>
+            <button class="btn btn-primary" id="btnNuevo">+ Nuevo usuario</button>
+          </div>
+
+          <!-- Tabla -->
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+              <tr>
+                <th>ID Usuario</th>
+                <th>Nombre completo</th>
+                <th>Correo</th>
+                <th>Usuario</th>
+                <th>Rol</th>
+                <th>Fecha creación</th>
+                <th style="width: 130px;">Acciones</th>
+              </tr>
+              </thead>
+              <tbody id="tbodyUsuarios">
+              <!-- se llena por JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div> <!-- /content-wrap -->
+    </main>
   </div>
 
-  <table>
-    <thead>
-    <tr>
-      <th>ID Usuario</th>
-      <th>Nombre completo</th>
-      <th>Correo</th>
-      <th>Usuario</th>
-      <th>Rol</th>
-      <th>Fecha creación</th>
-      <th style="width: 130px;">Acciones</th>
-    </tr>
-    </thead>
-    <tbody id="tbodyUsuarios">
-    <!-- se llena por JS -->
-    </tbody>
-  </table>
-</div>
+  <!-- MODAL alta / edición -->
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modalTitulo">Nuevo usuario</h2>
+        <button class="btn btn-secondary" type="button" id="btnCerrarModal">X</button>
+      </div>
+      <form id="formUsuario">
+        <div class="modal-body">
+          <input type="hidden" id="idUsuario">
+          <input type="hidden" id="idMiembro">
 
-<!-- Modal alta / edición -->
-<div class="modal-backdrop" id="modalBackdrop">
-  <div class="modal">
-    <div class="modal-header">
-      <h2 id="modalTitulo">Nuevo usuario</h2>
-      <button class="btn btn-secondary" type="button" id="btnCerrarModal">X</button>
+          <label>
+            Nombre
+            <input type="text" id="nombre" required>
+          </label>
+
+          <label>
+            Apellido paterno
+            <input type="text" id="apPaterno" required>
+          </label>
+
+          <label>
+            Apellido materno
+            <input type="text" id="apMaterno" required>
+          </label>
+
+          <label>
+            RFC
+            <input type="text" id="rfcMiembro" maxlength="13">
+          </label>
+
+          <label>
+            Teléfono
+            <input type="text" id="telefono" maxlength="15">
+          </label>
+
+          <label>
+            Correo electrónico
+            <input type="email" id="email" required>
+          </label>
+
+          <label>
+            Nombre de usuario
+            <input type="text" id="username" required>
+          </label>
+
+          <label>
+            Rol / Tipo de usuario
+            <select id="tipoUsuario" required>
+              <option value="">Seleccione...</option>
+              <option value="ADMINISTRADOR">ADMINISTRADOR</option>
+              <option value="SGI">SGI</option>
+            </select>
+          </label>
+
+          <label>
+            Password (solo alta)
+            <input type="password" id="password">
+          </label>
+        </div>
+
+        <div id="errorForm" class="error-msg"></div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btnCancelar">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="btnGuardar">Guardar</button>
+        </div>
+      </form>
     </div>
-    <form id="formUsuario">
-      <div class="modal-body">
-        <input type="hidden" id="idUsuario">
-        <input type="hidden" id="idMiembro">
-
-        <label>
-          Nombre
-          <input type="text" id="nombre" required>
-        </label>
-
-        <label>
-          Apellido paterno
-          <input type="text" id="apPaterno" required>
-        </label>
-
-        <label>
-          Apellido materno
-          <input type="text" id="apMaterno" required>
-        </label>
-
-        <label>
-          RFC
-          <input type="text" id="rfcMiembro" maxlength="13">
-        </label>
-
-        <label>
-          Teléfono
-          <input type="text" id="telefono" maxlength="15">
-        </label>
-
-        <label>
-          Correo electrónico
-          <input type="email" id="email" required>
-        </label>
-
-        <label>
-          Nombre de usuario
-          <input type="text" id="username" required>
-        </label>
-
-        <label>
-          Rol / Tipo de usuario
-          <select id="tipoUsuario" required>
-            <option value="">Seleccione...</option>
-            <option value="ADMINISTRADOR">ADMINISTRADOR</option>
-            <option value="SGI">SGI</option>
-          </select>
-        </label>
-
-        <label>
-          Password (solo alta)
-          <input type="password" id="password">
-        </label>
-      </div>
-
-      <div id="errorForm" class="error-msg"></div>
-
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" id="btnCancelar">Cancelar</button>
-        <button type="submit" class="btn btn-primary" id="btnGuardar">Guardar</button>
-      </div>
-    </form>
   </div>
-</div>
 
-<script>
-  const tbody = document.getElementById('tbodyUsuarios');
-  const buscador = document.getElementById('buscador');
-  const btnRefrescar = document.getElementById('btnRefrescar');
-  const btnNuevo = document.getElementById('btnNuevo');
+  <!-- JS del dashboard (sidebar, menús, etc.) -->
+  <script src="/js/dashboard.js"></script>
 
-  const modalBackdrop = document.getElementById('modalBackdrop');
-  const modalTitulo = document.getElementById('modalTitulo');
-  const btnCerrarModal = document.getElementById('btnCerrarModal');
-  const btnCancelar = document.getElementById('btnCancelar');
-  const formUsuario = document.getElementById('formUsuario');
-  const errorForm = document.getElementById('errorForm');
+  <!-- JS específico de usuarios (igual que ya tenías) -->
+  <script>
+    const tbody = document.getElementById('tbodyUsuarios');
+    const buscador = document.getElementById('buscador');
+    const btnRefrescar = document.getElementById('btnRefrescar');
+    const btnNuevo = document.getElementById('btnNuevo');
 
-  const idUsuario = document.getElementById('idUsuario');
-  const idMiembro = document.getElementById('idMiembro');
-  const nombre = document.getElementById('nombre');
-  const apPaterno = document.getElementById('apPaterno');
-  const apMaterno = document.getElementById('apMaterno');
-  const rfcMiembro = document.getElementById('rfcMiembro');
-  const telefono = document.getElementById('telefono');
-  const email = document.getElementById('email');
-  const username = document.getElementById('username');
-  const tipoUsuario = document.getElementById('tipoUsuario');
-  const password = document.getElementById('password');
+    const modalBackdrop = document.getElementById('modalBackdrop');
+    const modalTitulo = document.getElementById('modalTitulo');
+    const btnCerrarModal = document.getElementById('btnCerrarModal');
+    const btnCancelar = document.getElementById('btnCancelar');
+    const formUsuario = document.getElementById('formUsuario');
+    const errorForm = document.getElementById('errorForm');
 
-  const csrfToken = document.querySelector('meta[name="_csrf"]').content;
-  const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+    const idUsuario = document.getElementById('idUsuario');
+    const idMiembro = document.getElementById('idMiembro');
+    const nombre = document.getElementById('nombre');
+    const apPaterno = document.getElementById('apPaterno');
+    const apMaterno = document.getElementById('apMaterno');
+    const rfcMiembro = document.getElementById('rfcMiembro');
+    const telefono = document.getElementById('telefono');
+    const email = document.getElementById('email');
+    const username = document.getElementById('username');
+    const tipoUsuario = document.getElementById('tipoUsuario');
+    const password = document.getElementById('password');
 
-  function abrirModal(modo, usuario = null) {
-    errorForm.textContent = '';
+    const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
 
-    if (modo === 'nuevo') {
-      modalTitulo.textContent = 'Nuevo usuario';
-      idUsuario.value = '';
-      idMiembro.value = '';
-      nombre.value = '';
-      apPaterno.value = '';
-      apMaterno.value = '';
-      rfcMiembro.value = '';
-      telefono.value = '';
-      email.value = '';
-      username.value = '';
-      tipoUsuario.value = '';
-      password.value = '';
-      password.disabled = false;
-    } else if (modo === 'editar' && usuario) {
-      modalTitulo.textContent = 'Editar usuario';
-      idUsuario.value = usuario.idUsuario;
-      idMiembro.value = usuario.idMiembro;
-      nombre.value = usuario.nombre || '';
-      apPaterno.value = usuario.apPaterno || '';
-      apMaterno.value = usuario.apMaterno || '';
-      rfcMiembro.value = usuario.rfcMiembro || '';
-      telefono.value = usuario.telefono || '';
-      email.value = usuario.email || usuario.emailMiembro || '';
-      username.value = usuario.username || '';
-      tipoUsuario.value = usuario.tipoUsuario || usuario.rol || '';
-      password.value = '';
-      password.disabled = true; // no cambiamos password desde aquí
-    }
-    modalBackdrop.style.display = 'flex';
-  }
+    function abrirModal(modo, usuario = null) {
+      errorForm.textContent = '';
 
-  function cerrarModal() {
-    modalBackdrop.style.display = 'none';
-  }
-
-  async function cargarUsuarios() {
-    const q = buscador.value.trim();
-    const params = q ? '?q=' + encodeURIComponent(q) : '';
-    const res = await fetch('/admin/usuarios/api' + params, {
-      headers: { 'Accept': 'application/json' }
-    });
-
-    if (!res.ok) {
-      console.error('Error al cargar usuarios');
-      return;
-    }
-    const data = await res.json();
-    renderTabla(data);
-  }
-
-  function renderTabla(usuarios) {
-    tbody.innerHTML = '';
-    if (!usuarios || usuarios.length === 0) {
-      const tr = document.createElement('tr');
-      const td = document.createElement('td');
-      td.colSpan = 7;
-      td.textContent = 'No se encontraron usuarios.';
-      tr.appendChild(td);
-      tbody.appendChild(tr);
-      return;
+      if (modo === 'nuevo') {
+        modalTitulo.textContent = 'Nuevo usuario';
+        idUsuario.value = '';
+        idMiembro.value = '';
+        nombre.value = '';
+        apPaterno.value = '';
+        apMaterno.value = '';
+        rfcMiembro.value = '';
+        telefono.value = '';
+        email.value = '';
+        username.value = '';
+        tipoUsuario.value = '';
+        password.value = '';
+        password.disabled = false;
+      } else if (modo === 'editar' && usuario) {
+        modalTitulo.textContent = 'Editar usuario';
+        idUsuario.value = usuario.idUsuario;
+        idMiembro.value = usuario.idMiembro;
+        nombre.value = usuario.nombre || '';
+        apPaterno.value = usuario.apPaterno || '';
+        apMaterno.value = usuario.apMaterno || '';
+        rfcMiembro.value = usuario.rfcMiembro || '';
+        telefono.value = usuario.telefono || '';
+        email.value = usuario.email || usuario.emailMiembro || '';
+        username.value = usuario.username || '';
+        tipoUsuario.value = usuario.tipoUsuario || usuario.rol || '';
+        password.value = '';
+        password.disabled = true; // no cambiamos password desde aquí
+      }
+      modalBackdrop.style.display = 'flex';
     }
 
-    usuarios.forEach(u => {
-      const tr = document.createElement('tr');
+    function cerrarModal() {
+      modalBackdrop.style.display = 'none';
+    }
 
-      const tdId = document.createElement('td');
-      tdId.textContent = u.idUsuario;
-      tr.appendChild(tdId);
-
-      const tdNombre = document.createElement('td');
-      const nombreCompleto = `${u.nombre || ''} ${u.apPaterno || ''} ${u.apMaterno || ''}`.trim();
-      tdNombre.textContent = nombreCompleto;
-      tr.appendChild(tdNombre);
-
-      const tdEmail = document.createElement('td');
-      tdEmail.textContent = u.email || u.emailMiembro || '';
-      tr.appendChild(tdEmail);
-
-      const tdUser = document.createElement('td');
-      tdUser.textContent = u.username || '';
-      tr.appendChild(tdUser);
-
-      const tdRol = document.createElement('td');
-      const spanRol = document.createElement('span');
-      spanRol.className = 'badge badge-role';
-      spanRol.textContent = u.tipoUsuario || u.rol || '';
-      tdRol.appendChild(spanRol);
-      tr.appendChild(tdRol);
-
-      const tdFecha = document.createElement('td');
-      tdFecha.textContent = u.fechaCreacion || '';
-      tr.appendChild(tdFecha);
-
-      const tdAcciones = document.createElement('td');
-
-      const btnEdit = document.createElement('button');
-      btnEdit.textContent = 'Editar';
-      btnEdit.className = 'btn btn-secondary';
-      btnEdit.style.marginRight = '0.3rem';
-      btnEdit.addEventListener('click', () => abrirModal('editar', u));
-
-      const btnDel = document.createElement('button');
-      btnDel.textContent = 'Eliminar';
-      btnDel.className = 'btn btn-danger';
-      btnDel.addEventListener('click', async () => {
-        if (!confirm('¿Eliminar este usuario y su miembro asociado?')) return;
-        await eliminarUsuario(u.idUsuario, u.idMiembro);
-        await cargarUsuarios();
+    async function cargarUsuarios() {
+      const q = buscador.value.trim();
+      const params = q ? '?q=' + encodeURIComponent(q) : '';
+      const res = await fetch('/admin/usuarios/api' + params, {
+        headers: { 'Accept': 'application/json' }
       });
 
-      tdAcciones.appendChild(btnEdit);
-      tdAcciones.appendChild(btnDel);
-      tr.appendChild(tdAcciones);
-
-      tbody.appendChild(tr);
-    });
-  }
-
-  async function eliminarUsuario(idUsuario, idMiembro) {
-    const res = await fetch(`/admin/usuarios/api/${idUsuario}/${idMiembro}`, {
-      method: 'DELETE',
-      headers: { [csrfHeader]: csrfToken }
-    });
-    if (!res.ok) {
-      alert('Error al eliminar usuario');
-    }
-  }
-
-  formUsuario.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    errorForm.textContent = '';
-
-    if (!nombre.value.trim() || !apPaterno.value.trim() || !apMaterno.value.trim()
-      || !email.value.trim() || !username.value.trim() || !tipoUsuario.value) {
-      errorForm.textContent = 'Por favor, llena todos los campos obligatorios.';
-      return;
-    }
-
-    const payload = {
-      idUsuario: idUsuario.value ? Number(idUsuario.value) : null,
-      idMiembro: idMiembro.value ? Number(idMiembro.value) : null,
-      nombre: nombre.value.trim(),
-      apPaterno: apPaterno.value.trim(),
-      apMaterno: apMaterno.value.trim(),
-      rfcMiembro: rfcMiembro.value.trim(),
-      telefono: telefono.value.trim(),
-      email: email.value.trim(),       // USUARIO
-      emailMiembro: email.value.trim(),// MIEMBRO
-      username: username.value.trim(),
-      tipoUsuario: tipoUsuario.value,
-      rol: tipoUsuario.value
-    };
-
-    const esNuevo = !payload.idUsuario;
-    let url = '/admin/usuarios/api';
-    let method = 'POST';
-
-    if (!esNuevo) {
-      url = `/admin/usuarios/api/${payload.idUsuario}/${payload.idMiembro}`;
-      method = 'PUT';
-    } else {
-      payload.password = password.value;
-      if (!payload.password || !payload.password.trim()) {
-        errorForm.textContent = 'El password es obligatorio para crear un usuario.';
+      if (!res.ok) {
+        console.error('Error al cargar usuarios');
         return;
+      }
+      const data = await res.json();
+      renderTabla(data);
+    }
+
+    function renderTabla(usuarios) {
+      tbody.innerHTML = '';
+      if (!usuarios || usuarios.length === 0) {
+        const tr = document.createElement('tr');
+        const td = document.createElement('td');
+        td.colSpan = 7;
+        td.textContent = 'No se encontraron usuarios.';
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+        return;
+      }
+
+      usuarios.forEach(u => {
+        const tr = document.createElement('tr');
+
+        const tdId = document.createElement('td');
+        tdId.textContent = u.idUsuario;
+        tr.appendChild(tdId);
+
+        const tdNombre = document.createElement('td');
+        const nombreCompleto = `${u.nombre || ''} ${u.apPaterno || ''} ${u.apMaterno || ''}`.trim();
+        tdNombre.textContent = nombreCompleto;
+        tr.appendChild(tdNombre);
+
+        const tdEmail = document.createElement('td');
+        tdEmail.textContent = u.email || u.emailMiembro || '';
+        tr.appendChild(tdEmail);
+
+        const tdUser = document.createElement('td');
+        tdUser.textContent = u.username || '';
+        tr.appendChild(tdUser);
+
+        const tdRol = document.createElement('td');
+        const spanRol = document.createElement('span');
+        spanRol.className = 'badge badge-role';
+        spanRol.textContent = u.tipoUsuario || u.rol || '';
+        tdRol.appendChild(spanRol);
+        tr.appendChild(tdRol);
+
+        const tdFecha = document.createElement('td');
+        tdFecha.textContent = u.fechaCreacion || '';
+        tr.appendChild(tdFecha);
+
+        const tdAcciones = document.createElement('td');
+
+        const btnEdit = document.createElement('button');
+        btnEdit.textContent = 'Editar';
+        btnEdit.className = 'btn btn-secondary';
+        btnEdit.style.marginRight = '0.3rem';
+        btnEdit.addEventListener('click', () => abrirModal('editar', u));
+
+        const btnDel = document.createElement('button');
+        btnDel.textContent = 'Eliminar';
+        btnDel.className = 'btn btn-danger';
+        btnDel.addEventListener('click', async () => {
+          if (!confirm('¿Eliminar este usuario y su miembro asociado?')) return;
+          await eliminarUsuario(u.idUsuario, u.idMiembro);
+          await cargarUsuarios();
+        });
+
+        tdAcciones.appendChild(btnEdit);
+        tdAcciones.appendChild(btnDel);
+        tr.appendChild(tdAcciones);
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function eliminarUsuario(idUsuario, idMiembro) {
+      const res = await fetch(`/admin/usuarios/api/${idUsuario}/${idMiembro}`, {
+        method: 'DELETE',
+        headers: { [csrfHeader]: csrfToken }
+      });
+      if (!res.ok) {
+        alert('Error al eliminar usuario');
       }
     }
 
-    const res = await fetch(url, {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        [csrfHeader]: csrfToken
-      },
-      body: JSON.stringify(payload)
+    formUsuario.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorForm.textContent = '';
+
+      if (!nombre.value.trim() || !apPaterno.value.trim() || !apMaterno.value.trim()
+        || !email.value.trim() || !username.value.trim() || !tipoUsuario.value) {
+        errorForm.textContent = 'Por favor, llena todos los campos obligatorios.';
+        return;
+      }
+
+      const payload = {
+        idUsuario: idUsuario.value ? Number(idUsuario.value) : null,
+        idMiembro: idMiembro.value ? Number(idMiembro.value) : null,
+        nombre: nombre.value.trim(),
+        apPaterno: apPaterno.value.trim(),
+        apMaterno: apMaterno.value.trim(),
+        rfcMiembro: rfcMiembro.value.trim(),
+        telefono: telefono.value.trim(),
+        email: email.value.trim(),        // USUARIO
+        emailMiembro: email.value.trim(), // MIEMBRO
+        username: username.value.trim(),
+        tipoUsuario: tipoUsuario.value,
+        rol: tipoUsuario.value
+      };
+
+      const esNuevo = !payload.idUsuario;
+      let url = '/admin/usuarios/api';
+      let method = 'POST';
+
+      if (!esNuevo) {
+        url = `/admin/usuarios/api/${payload.idUsuario}/${payload.idMiembro}`;
+        method = 'PUT';
+      } else {
+        payload.password = password.value;
+        if (!payload.password || !payload.password.trim()) {
+          errorForm.textContent = 'El password es obligatorio para crear un usuario.';
+          return;
+        }
+      }
+
+      const res = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          [csrfHeader]: csrfToken
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        errorForm.textContent = 'Ocurrió un error al guardar el usuario.';
+        return;
+      }
+
+      cerrarModal();
+      await cargarUsuarios();
     });
 
-    if (!res.ok) {
-      errorForm.textContent = 'Ocurrió un error al guardar el usuario.';
-      return;
-    }
+    btnNuevo.addEventListener('click', () => abrirModal('nuevo'));
+    btnCerrarModal.addEventListener('click', cerrarModal);
+    btnCancelar.addEventListener('click', cerrarModal);
+    btnRefrescar.addEventListener('click', cargarUsuarios);
 
-    cerrarModal();
-    await cargarUsuarios();
-  });
+    let searchTimeout;
+    buscador.addEventListener('input', () => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(cargarUsuarios, 300);
+    });
 
-  btnNuevo.addEventListener('click', () => abrirModal('nuevo'));
-  btnCerrarModal.addEventListener('click', cerrarModal);
-  btnCancelar.addEventListener('click', cerrarModal);
-  btnRefrescar.addEventListener('click', cargarUsuarios);
-
-  let searchTimeout;
-  buscador.addEventListener('input', () => {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(cargarUsuarios, 300);
-  });
-
-  document.addEventListener('DOMContentLoaded', cargarUsuarios);
-</script>
+    document.addEventListener('DOMContentLoaded', cargarUsuarios);
+  </script>
 </body>
 </html>
