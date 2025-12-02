@@ -1,4 +1,3 @@
-<!-- src/main/resources/templates/usuarios-admin.html -->
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
@@ -8,137 +7,13 @@
   <title>Administración de Usuarios — Plataforma ISO</title>
 
   <!-- CSRF para las peticiones AJAX -->
-  <meta name="_csrf" th:content="${_csrf.token}"/>
-  <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+  <meta name="_csrf" th:content="${_csrf.token}" />
+  <meta name="_csrf_header" th:content="${_csrf.headerName}" />
 
   <!-- Mismo CSS del dashboard -->
   <link rel="stylesheet" th:href="@{/css/dashboard.css}">
-
   <!-- Estilos específicos SOLO para esta pantalla de usuarios -->
-  <style>
-    .users-page .users-toolbar {
-      display: flex;
-      gap: 1rem;
-      margin-top: 1rem;
-      margin-bottom: 1rem;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    .users-page .users-toolbar input[type="text"] {
-      flex: 1;
-      min-width: 260px;
-      padding: 0.5rem 0.75rem;
-      border-radius: 8px;
-      border: 1px solid #1f2937;
-      background-color: #020817;
-      color: #e5e7eb;
-    }
-    .users-page .btn {
-      border: none;
-      border-radius: 8px;
-      padding: 0.45rem 0.9rem;
-      cursor: pointer;
-      font-size: 0.9rem;
-    }
-    .users-page .btn-primary { background: #22c55e; color: #0b1120; }
-    .users-page .btn-secondary { background: #111827; color: #e5e7eb; }
-    .users-page .btn-danger { background: #ef4444; color: #f9fafb; }
-
-    .users-page .table-wrap {
-      overflow-x: auto;
-      margin-top: 0.5rem;
-    }
-    .users-page table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.9rem;
-    }
-    .users-page thead {
-      background: #020617;
-    }
-    .users-page th,
-    .users-page td {
-      padding: 0.55rem 0.6rem;
-      border-bottom: 1px solid #1f2937;
-      text-align: left;
-    }
-    .users-page tbody tr:hover {
-      background: #020617;
-    }
-
-    .users-page .badge {
-      display: inline-block;
-      padding: 0.15rem 0.45rem;
-      border-radius: 999px;
-      font-size: 0.75rem;
-    }
-    .users-page .badge-role {
-      background: #0ea5e9;
-      color: #0b1120;
-    }
-
-    /* Modal */
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(15,23,42,0.75);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 50;
-    }
-    .modal {
-      background: #020617;
-      border-radius: 12px;
-      padding: 1.5rem;
-      max-width: 650px;
-      width: 100%;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-      border: 1px solid #1f2937;
-    }
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-    }
-    .modal-header h2 {
-      margin: 0;
-      font-size: 1.1rem;
-    }
-    .modal-body {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 0.65rem 1rem;
-      font-size: 0.9rem;
-    }
-    .modal-body label {
-      display: flex;
-      flex-direction: column;
-      gap: 0.15rem;
-      font-weight: 500;
-    }
-    .modal-body input,
-    .modal-body select {
-      padding: 0.4rem 0.6rem;
-      border-radius: 6px;
-      border: 1px solid #1f2937;
-      font-size: 0.9rem;
-      background-color: #020817;
-      color: #e5e7eb;
-    }
-    .modal-footer {
-      margin-top: 1rem;
-      display: flex;
-      justify-content: flex-end;
-      gap: 0.5rem;
-    }
-    .error-msg {
-      color: #fca5a5;
-      font-size: 0.85rem;
-      margin-top: 0.25rem;
-    }
-  </style>
+  <link rel="stylesheet" th:href="@{/css/usuariosAdmin.css}">
 </head>
 
 <body>
@@ -163,9 +38,7 @@
         <th:block th:if="${tipoUsuario == 'ADMINISTRADOR' or tipoUsuario == 'SGI'}">
 
           <!-- Administrar usuarios (marcado como activo) -->
-          <a th:href="@{/admin/usuarios}"
-             class="item"
-             th:classappend="${active=='usuarios' ? ' active' : ''}">
+          <a th:href="@{/admin/usuarios}" class="item" th:classappend="${active=='usuarios' ? ' active' : ''}">
             <span class="icon">👥</span>
             <span class="text">Administrar usuarios</span>
           </a>
@@ -318,10 +191,10 @@
           <div class="user-menu">
             <div class="user-chip">
               <span class="user-avatar">
-                <span th:text="${#strings.substring(vm.username,0,1)}">U</span>
+                <span th:text="${#strings.substring(username,0,1)}">U</span>
               </span>
               <div class="user-info">
-                <span class="user-name" th:text="${vm.username}">Usuario</span>
+                <span class="user-name" id="usuerLoggedIn" th:text="${username}">Usuario</span>
                 <span class="user-role" th:text="${tipoUsuario}">ROL</span>
               </div>
             </div>
@@ -335,6 +208,7 @@
               </form>
             </div>
           </div>
+
         </div>
       </header>
 
@@ -359,18 +233,18 @@
           <div class="table-wrap">
             <table class="table">
               <thead>
-              <tr>
-                <th>ID Usuario</th>
-                <th>Nombre completo</th>
-                <th>Correo</th>
-                <th>Usuario</th>
-                <th>Rol</th>
-                <th>Fecha creación</th>
-                <th style="width: 130px;">Acciones</th>
-              </tr>
+                <tr>
+                  <th>ID Usuario</th>
+                  <th>Nombre completo</th>
+                  <th>Correo</th>
+                  <th>Usuario</th>
+                  <th>Rol</th>
+                  <th>Fecha creación</th>
+                  <th style="width: 130px;">Acciones</th>
+                </tr>
               </thead>
               <tbody id="tbodyUsuarios">
-              <!-- se llena por JS -->
+                <!-- se llena por JS -->
               </tbody>
             </table>
           </div>
@@ -407,11 +281,6 @@
           </label>
 
           <label>
-            RFC
-            <input type="text" id="rfcMiembro" maxlength="13">
-          </label>
-
-          <label>
             Teléfono
             <input type="text" id="telefono" maxlength="15">
           </label>
@@ -432,6 +301,8 @@
               <option value="">Seleccione...</option>
               <option value="ADMINISTRADOR">ADMINISTRADOR</option>
               <option value="SGI">SGI</option>
+              <option value="LIDER PRODUCCION">LÍDER PRODUCCIÓN</option>
+              <option value="LIDER SOPORTE TECNICO">LÍDER SOPORTE TÉCNICO</option>
             </select>
           </label>
 
@@ -453,238 +324,8 @@
 
   <!-- JS del dashboard (sidebar, menús, etc.) -->
   <script src="/js/dashboard.js"></script>
-
-  <!-- JS específico de usuarios (igual que ya tenías) -->
-  <script>
-    const tbody = document.getElementById('tbodyUsuarios');
-    const buscador = document.getElementById('buscador');
-    const btnRefrescar = document.getElementById('btnRefrescar');
-    const btnNuevo = document.getElementById('btnNuevo');
-
-    const modalBackdrop = document.getElementById('modalBackdrop');
-    const modalTitulo = document.getElementById('modalTitulo');
-    const btnCerrarModal = document.getElementById('btnCerrarModal');
-    const btnCancelar = document.getElementById('btnCancelar');
-    const formUsuario = document.getElementById('formUsuario');
-    const errorForm = document.getElementById('errorForm');
-
-    const idUsuario = document.getElementById('idUsuario');
-    const idMiembro = document.getElementById('idMiembro');
-    const nombre = document.getElementById('nombre');
-    const apPaterno = document.getElementById('apPaterno');
-    const apMaterno = document.getElementById('apMaterno');
-    const rfcMiembro = document.getElementById('rfcMiembro');
-    const telefono = document.getElementById('telefono');
-    const email = document.getElementById('email');
-    const username = document.getElementById('username');
-    const tipoUsuario = document.getElementById('tipoUsuario');
-    const password = document.getElementById('password');
-
-    const csrfToken = document.querySelector('meta[name="_csrf"]').content;
-    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
-
-    function abrirModal(modo, usuario = null) {
-      errorForm.textContent = '';
-
-      if (modo === 'nuevo') {
-        modalTitulo.textContent = 'Nuevo usuario';
-        idUsuario.value = '';
-        idMiembro.value = '';
-        nombre.value = '';
-        apPaterno.value = '';
-        apMaterno.value = '';
-        rfcMiembro.value = '';
-        telefono.value = '';
-        email.value = '';
-        username.value = '';
-        tipoUsuario.value = '';
-        password.value = '';
-        password.disabled = false;
-      } else if (modo === 'editar' && usuario) {
-        modalTitulo.textContent = 'Editar usuario';
-        idUsuario.value = usuario.idUsuario;
-        idMiembro.value = usuario.idMiembro;
-        nombre.value = usuario.nombre || '';
-        apPaterno.value = usuario.apPaterno || '';
-        apMaterno.value = usuario.apMaterno || '';
-        rfcMiembro.value = usuario.rfcMiembro || '';
-        telefono.value = usuario.telefono || '';
-        email.value = usuario.email || usuario.emailMiembro || '';
-        username.value = usuario.username || '';
-        tipoUsuario.value = usuario.tipoUsuario || usuario.rol || '';
-        password.value = '';
-        password.disabled = true; // no cambiamos password desde aquí
-      }
-      modalBackdrop.style.display = 'flex';
-    }
-
-    function cerrarModal() {
-      modalBackdrop.style.display = 'none';
-    }
-
-    async function cargarUsuarios() {
-      const q = buscador.value.trim();
-      const params = q ? '?q=' + encodeURIComponent(q) : '';
-      const res = await fetch('/admin/usuarios/api' + params, {
-        headers: { 'Accept': 'application/json' }
-      });
-
-      if (!res.ok) {
-        console.error('Error al cargar usuarios');
-        return;
-      }
-      const data = await res.json();
-      renderTabla(data);
-    }
-
-    function renderTabla(usuarios) {
-      tbody.innerHTML = '';
-      if (!usuarios || usuarios.length === 0) {
-        const tr = document.createElement('tr');
-        const td = document.createElement('td');
-        td.colSpan = 7;
-        td.textContent = 'No se encontraron usuarios.';
-        tr.appendChild(td);
-        tbody.appendChild(tr);
-        return;
-      }
-
-      usuarios.forEach(u => {
-        const tr = document.createElement('tr');
-
-        const tdId = document.createElement('td');
-        tdId.textContent = u.idUsuario;
-        tr.appendChild(tdId);
-
-        const tdNombre = document.createElement('td');
-        const nombreCompleto = `${u.nombre || ''} ${u.apPaterno || ''} ${u.apMaterno || ''}`.trim();
-        tdNombre.textContent = nombreCompleto;
-        tr.appendChild(tdNombre);
-
-        const tdEmail = document.createElement('td');
-        tdEmail.textContent = u.email || u.emailMiembro || '';
-        tr.appendChild(tdEmail);
-
-        const tdUser = document.createElement('td');
-        tdUser.textContent = u.username || '';
-        tr.appendChild(tdUser);
-
-        const tdRol = document.createElement('td');
-        const spanRol = document.createElement('span');
-        spanRol.className = 'badge badge-role';
-        spanRol.textContent = u.tipoUsuario || u.rol || '';
-        tdRol.appendChild(spanRol);
-        tr.appendChild(tdRol);
-
-        const tdFecha = document.createElement('td');
-        tdFecha.textContent = u.fechaCreacion || '';
-        tr.appendChild(tdFecha);
-
-        const tdAcciones = document.createElement('td');
-
-        const btnEdit = document.createElement('button');
-        btnEdit.textContent = 'Editar';
-        btnEdit.className = 'btn btn-secondary';
-        btnEdit.style.marginRight = '0.3rem';
-        btnEdit.addEventListener('click', () => abrirModal('editar', u));
-
-        const btnDel = document.createElement('button');
-        btnDel.textContent = 'Eliminar';
-        btnDel.className = 'btn btn-danger';
-        btnDel.addEventListener('click', async () => {
-          if (!confirm('¿Eliminar este usuario y su miembro asociado?')) return;
-          await eliminarUsuario(u.idUsuario, u.idMiembro);
-          await cargarUsuarios();
-        });
-
-        tdAcciones.appendChild(btnEdit);
-        tdAcciones.appendChild(btnDel);
-        tr.appendChild(tdAcciones);
-
-        tbody.appendChild(tr);
-      });
-    }
-
-    async function eliminarUsuario(idUsuario, idMiembro) {
-      const res = await fetch(`/admin/usuarios/api/${idUsuario}/${idMiembro}`, {
-        method: 'DELETE',
-        headers: { [csrfHeader]: csrfToken }
-      });
-      if (!res.ok) {
-        alert('Error al eliminar usuario');
-      }
-    }
-
-    formUsuario.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      errorForm.textContent = '';
-
-      if (!nombre.value.trim() || !apPaterno.value.trim() || !apMaterno.value.trim()
-        || !email.value.trim() || !username.value.trim() || !tipoUsuario.value) {
-        errorForm.textContent = 'Por favor, llena todos los campos obligatorios.';
-        return;
-      }
-
-      const payload = {
-        idUsuario: idUsuario.value ? Number(idUsuario.value) : null,
-        idMiembro: idMiembro.value ? Number(idMiembro.value) : null,
-        nombre: nombre.value.trim(),
-        apPaterno: apPaterno.value.trim(),
-        apMaterno: apMaterno.value.trim(),
-        rfcMiembro: rfcMiembro.value.trim(),
-        telefono: telefono.value.trim(),
-        email: email.value.trim(),        // USUARIO
-        emailMiembro: email.value.trim(), // MIEMBRO
-        username: username.value.trim(),
-        tipoUsuario: tipoUsuario.value,
-        rol: tipoUsuario.value
-      };
-
-      const esNuevo = !payload.idUsuario;
-      let url = '/admin/usuarios/api';
-      let method = 'POST';
-
-      if (!esNuevo) {
-        url = `/admin/usuarios/api/${payload.idUsuario}/${payload.idMiembro}`;
-        method = 'PUT';
-      } else {
-        payload.password = password.value;
-        if (!payload.password || !payload.password.trim()) {
-          errorForm.textContent = 'El password es obligatorio para crear un usuario.';
-          return;
-        }
-      }
-
-      const res = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          [csrfHeader]: csrfToken
-        },
-        body: JSON.stringify(payload)
-      });
-
-      if (!res.ok) {
-        errorForm.textContent = 'Ocurrió un error al guardar el usuario.';
-        return;
-      }
-
-      cerrarModal();
-      await cargarUsuarios();
-    });
-
-    btnNuevo.addEventListener('click', () => abrirModal('nuevo'));
-    btnCerrarModal.addEventListener('click', cerrarModal);
-    btnCancelar.addEventListener('click', cerrarModal);
-    btnRefrescar.addEventListener('click', cargarUsuarios);
-
-    let searchTimeout;
-    buscador.addEventListener('input', () => {
-      clearTimeout(searchTimeout);
-      searchTimeout = setTimeout(cargarUsuarios, 300);
-    });
-
-    document.addEventListener('DOMContentLoaded', cargarUsuarios);
-  </script>
+  <!-- JS específico de usuarios -->
+  <script src="/js/usersCrud/usuariosAdmin.js"></script>
 </body>
+
 </html>

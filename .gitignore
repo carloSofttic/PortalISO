@@ -1,8 +1,31 @@
-echo target/ > .gitignore
-echo build/ >> .gitignore
-echo .idea/ >> .gitignore
-echo .vscode/ >> .gitignore
-echo *.iml >> .gitignore
-echo *.log >> .gitignore
-echo src/main/resources/application-*.yml >> .gitignore
-echo src/main/resources/application-*.properties >> .gitignore
+### Maven ###
+target/
+!.mvn/wrapper/maven-wrapper.jar
+*.class
+*.jar
+*.war
+*.ear
+
+### IntelliJ IDEA ###
+.idea/
+*.iml
+
+### VS Code ###
+.vscode/
+
+### Logs ###
+*.log
+
+### OS Files ###
+.DS_Store
+
+### Spring Boot: perfiles locales que no deben subirse ###
+src/main/resources/application-*.yml
+src/main/resources/application-*.properties
+
+### Node/Frontend (si lo usas) ###
+node_modules/
+
+### Backup files ###
+*.bak
+*.tmp

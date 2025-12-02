@@ -13,6 +13,7 @@ public class UsuarioMiembroDTO {
     private String password;          // solo para altas
     private String email;
     private String primerInicioSesi;
+    
 
     // Campos MIEMBRO
     private Long idMiembro;

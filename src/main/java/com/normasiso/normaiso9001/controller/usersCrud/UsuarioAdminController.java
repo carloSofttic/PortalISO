@@ -1,29 +1,27 @@
-// src/main/java/com/normasiso/normaiso9001/controller/usuario/UsuarioAdminController.java
+// src/main/java/com/normasiso/normaiso9001/controller/usersCrud/UsuarioAdminController.java
 package com.normasiso.normaiso9001.controller.usersCrud;
 
 import com.normasiso.normaiso9001.model.usersCrud.UsuarioMiembroDTO;
 import com.normasiso.normaiso9001.repository.usersCrud.UsuarioAdminRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Controller // Indica que esta clase manejará peticiones web (controlador MVC)
-@RequestMapping("/admin/usuarios") // URL base para todas las rutas de este controlador
-@PreAuthorize("hasAnyAuthority('ADMINISTRADOR','SGI')") 
-// Restringe el acceso: solo ADMINISTRADOR o SGI pueden usar este módulo
+@Controller
+@RequestMapping("/admin/usuarios")
+@PreAuthorize("hasAnyAuthority('ADMINISTRADOR','SGI')")
 public class UsuarioAdminController {
 
-    // Inyección del repositorio que maneja las operaciones SQL sobre USUARIO y MIEMBRO
     private final UsuarioAdminRepository usuarioRepo;
-
-    // PasswordEncoder para encriptar contraseñas antes de guardarlas en la BD
     private final PasswordEncoder passwordEncoder;
 
-    // Constructor con inyección de dependencias
     public UsuarioAdminController(UsuarioAdminRepository usuarioRepo,
                                   PasswordEncoder passwordEncoder) {
         this.usuarioRepo = usuarioRepo;
@@ -31,51 +29,89 @@ public class UsuarioAdminController {
     }
 
     /**
-     * Renderiza la vista Thymeleaf "usuarios-admin.html".
-     * Esta vista contiene la tabla dinámica (AJAX) y los modales para CRUD.
+     * Vista principal de administración de usuarios.
      */
     @GetMapping
-    public String vistaAdminUsuarios() {
+    public String vistaAdminUsuarios(Model model, Authentication authentication) {
+
+        String username = (authentication != null) ? authentication.getName() : "Usuario";
+
+        String tipoUsuario = "DESCONOCIDO";
+        if (authentication != null && authentication.getAuthorities() != null) {
+            tipoUsuario = authentication.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)   // ej. "ROLE_SGI"
+                    .findFirst()
+                    .orElse("DESCONOCIDO");
+
+            if (tipoUsuario.startsWith("ROLE_")) {
+                tipoUsuario = tipoUsuario.substring(5);   // "SGI"
+            }
+        }
+
+        model.addAttribute("active", "usuarios");
+        model.addAttribute("username", username);
+        model.addAttribute("tipoUsuario", tipoUsuario);
+
         return "usersCrud/usuariosAdmin";
     }
 
     /**
-     * ENDPOINT: GET /admin/usuarios/api
-     * Retorna lista de usuarios combinada con datos de MIEMBRO.
-     * Si se pasa ?q=texto aplica filtro de búsqueda.
+     * GET /admin/usuarios/api
+     * Lista usuarios SOLO de la misma compañía del usuario logueado.
+     * Soporta filtro ?q= para la barra de búsqueda.
      */
     @GetMapping("/api")
-    @ResponseBody // Indica que la respuesta será JSON (no una vista)
-    public List<UsuarioMiembroDTO> listar(@RequestParam(value = "q", required = false) String filtro) {
-        return usuarioRepo.buscar(filtro);
+    @ResponseBody
+    public List<UsuarioMiembroDTO> listar(
+            @RequestParam(value = "q", required = false) String filtro,
+            Authentication authentication) {
+
+        String username = authentication.getName();
+
+        // Obtenemos la compañía del usuario logueado
+        Long idCompania = usuarioRepo.obtenerIdCompaniaPorUsername(username);
+        if (idCompania == null) {
+            // Si no tiene compañía asociada, devolvemos lista vacía
+            return List.of();
+        }
+
+        return usuarioRepo.buscarPorCompania(idCompania, filtro);
     }
 
     /**
-     * ENDPOINT: POST /admin/usuarios/api
-     * Crea un nuevo registro en USUARIO y MIEMBRO dentro de una transacción.
+     * POST /admin/usuarios/api
+     * Crea un nuevo USUARIO + MIEMBRO en la misma compañía del usuario logueado.
      */
     @PostMapping("/api")
     @ResponseBody
-    public ResponseEntity<UsuarioMiembroDTO> crear(@RequestBody UsuarioMiembroDTO dto) {
+    public ResponseEntity<UsuarioMiembroDTO> crear(@RequestBody UsuarioMiembroDTO dto,
+                                                   Authentication authentication) {
 
-        // Validación mínima: la contraseña es obligatoria para crear un usuario
+        // Validación mínima: password obligatorio
         if (dto.getPassword() == null || dto.getPassword().isBlank()) {
             return ResponseEntity.badRequest().build();
         }
 
-        // Encriptar la contraseña antes de guardarla
+        // Encriptar contraseña
         dto.setPassword(passwordEncoder.encode(dto.getPassword()));
 
-        // Guardar en BD (inserta en USUARIO y MIEMBRO)
-        UsuarioMiembroDTO creado = usuarioRepo.insertar(dto);
+        // id_compania del usuario que está creando el registro
+        String usernameCreador = authentication.getName();
+        Long idCompania = usuarioRepo.obtenerIdCompaniaPorUsername(usernameCreador);
+        if (idCompania == null) {
+            // No debería pasar, pero por si acaso
+            return ResponseEntity.badRequest().build();
+        }
 
-        // Devolver el objeto creado como JSON
+        // Guardar en BD (USUARIO + MIEMBRO) dentro de esa compañía
+        UsuarioMiembroDTO creado = usuarioRepo.insertar(dto, idCompania);
+
         return ResponseEntity.ok(creado);
     }
 
     /**
-     * ENDPOINT: PUT /admin/usuarios/api/{idUsuario}/{idMiembro}
-     * Actualiza datos tanto en USUARIO como en MIEMBRO.
+     * PUT /admin/usuarios/api/{idUsuario}/{idMiembro}
+     * Actualiza datos en USUARIO y MIEMBRO.
      */
     @PutMapping("/api/{idUsuario}/{idMiembro}")
     @ResponseBody
@@ -83,15 +119,13 @@ public class UsuarioAdminController {
                                            @PathVariable Long idMiembro,
                                            @RequestBody UsuarioMiembroDTO dto) {
 
-        // Ejecuta el UPDATE en las 2 tablas
         usuarioRepo.actualizar(idUsuario, idMiembro, dto);
-
         return ResponseEntity.ok().build();
     }
 
     /**
-     * ENDPOINT: DELETE /admin/usuarios/api/{idUsuario}/{idMiembro}
-     * Elimina primero el registro de MIEMBRO y luego el de USUARIO.
+     * DELETE /admin/usuarios/api/{idUsuario}/{idMiembro}
+     * Elimina primero MIEMBRO y luego USUARIO.
      */
     @DeleteMapping("/api/{idUsuario}/{idMiembro}")
     @ResponseBody
@@ -99,7 +133,6 @@ public class UsuarioAdminController {
                                          @PathVariable Long idMiembro) {
 
         usuarioRepo.eliminar(idUsuario, idMiembro);
-
         return ResponseEntity.ok().build();
     }
 }
