@@ -24,8 +24,210 @@ const password = document.getElementById('password');
 const csrfToken = document.querySelector('meta[name="_csrf"]').content;
 const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
 
+// ========================= UTILIDADES =========================
+
+function limpiarErrores() {
+  errorForm.innerHTML = '';
+  errorForm.style.display = 'none';
+}
+
+function mostrarErrores(errores) {
+  if (!errores || errores.length === 0) {
+    limpiarErrores();
+    return;
+  }
+  errorForm.innerHTML = errores.map(e => `<div>• ${e}</div>`).join('');
+  errorForm.style.display = 'block';
+}
+
+function limpiarEstadosCampos() {
+  [nombre, apPaterno, apMaterno, telefono, email,  tipoUsuario, password]
+    .forEach(campo => campo.classList.remove('is-valid', 'is-invalid'));
+}
+
+function marcarOk(campo) {
+  campo.classList.remove('is-invalid');
+  campo.classList.add('is-valid');
+}
+
+function marcarError(campo) {
+  campo.classList.remove('is-valid');
+  campo.classList.add('is-invalid');
+}
+
+// ================== VALIDACIÓN POR CAMPO (TIEMPO REAL) ==================
+
+function validarCampoIndividual(campo) {
+  const value = campo.value.trim();
+  const id = campo.id;
+
+  const regexLetras = /^[a-zA-ZÁÉÍÓÚáéíóúüÜñÑ\s]+$/;
+  const regexTelefono = /^[0-9]{10}$/;
+  const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  switch (id) {
+    case 'nombre':
+    case 'apPaterno':
+    case 'apMaterno':
+      if (value.length >= 2 && regexLetras.test(value)) {
+        marcarOk(campo);
+      } else {
+        marcarError(campo);
+      }
+      break;
+
+    case 'telefono':
+      if (regexTelefono.test(value)) {
+        marcarOk(campo);
+      } else {
+        marcarError(campo);
+      }
+      break;
+
+    case 'email':
+      if (regexEmail.test(value)) {
+        marcarOk(campo);
+      } else {
+        marcarError(campo);
+      }
+      break;
+
+    /*case 'username':
+      if (value.length >= 4 && !/\s/.test(value)) {
+        marcarOk(campo);
+      } else {
+        marcarError(campo);
+      }
+      break;
+*/
+    case 'tipoUsuario':
+      if (value) {
+        marcarOk(campo);
+      } else {
+        marcarError(campo);
+      }
+      break;
+
+    case 'password':
+      // Solo validar en alta (cuando idUsuario está vacío)
+      if (!idUsuario.value) {
+        if (
+          value.length >= 6 &&
+          /[A-Z]/.test(value) &&
+          /[a-z]/.test(value) &&
+          /[0-9]/.test(value)
+        ) {
+          marcarOk(campo);
+        } else {
+          marcarError(campo);
+        }
+      } else {
+        campo.classList.remove('is-valid', 'is-invalid');
+      }
+      break;
+  }
+}
+
+// ================== VALIDACIÓN COMPLETA AL GUARDAR ==================
+
+function validarFormulario(esNuevo) {
+  const errores = [];
+  limpiarEstadosCampos();
+
+  const vNombre = nombre.value.trim();
+  const vApPaterno = apPaterno.value.trim();
+  const vApMaterno = apMaterno.value.trim();
+  const vTelefono = telefono.value.trim();
+  const vEmail = email.value.trim();
+  //const vUsername = username.value.trim();
+  const vTipoUsuario = tipoUsuario.value;
+  const vPassword = password.value.trim();
+
+  const regexLetras = /^[a-zA-ZÁÉÍÓÚáéíóúüÜñÑ\s]+$/;
+  const regexTelefono = /^[0-9]{10}$/;
+  const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  // Nombre
+  if (vNombre.length < 2 || !regexLetras.test(vNombre)) {
+    errores.push('El nombre debe tener mínimo 2 letras y solo contener caracteres válidos.');
+    marcarError(nombre);
+  } else {
+    marcarOk(nombre);
+  }
+
+  // Apellido paterno
+  if (vApPaterno.length < 2 || !regexLetras.test(vApPaterno)) {
+    errores.push('El apellido paterno debe tener mínimo 2 letras y solo contener caracteres válidos.');
+    marcarError(apPaterno);
+  } else {
+    marcarOk(apPaterno);
+  }
+
+  // Apellido materno
+  if (vApMaterno.length < 2 || !regexLetras.test(vApMaterno)) {
+    errores.push('El apellido materno es obligatorio y debe contener solo letras (mínimo 2).');
+    marcarError(apMaterno);
+  } else {
+    marcarOk(apMaterno);
+  }
+
+  // Teléfono
+  if (!regexTelefono.test(vTelefono)) {
+    errores.push('El teléfono es obligatorio y debe contener exactamente 10 dígitos numéricos.');
+    marcarError(telefono);
+  } else {
+    marcarOk(telefono);
+  }
+
+  // Email
+  if (!regexEmail.test(vEmail)) {
+    errores.push('Ingresa un correo electrónico válido.');
+    marcarError(email);
+  } else {
+    marcarOk(email);
+  }
+
+  // Username
+ /* if (vUsername.length < 4 || /\s/.test(vUsername)) {
+    errores.push('El nombre de usuario debe tener mínimo 4 caracteres y no puede contener espacios.');
+    marcarError(username);
+  } else {
+    marcarOk(username);
+  }*/
+
+  // Tipo de usuario
+  if (!vTipoUsuario) {
+    errores.push('Selecciona un rol / tipo de usuario.');
+    marcarError(tipoUsuario);
+  } else {
+    marcarOk(tipoUsuario);
+  }
+
+  // Password solo en alta
+  if (esNuevo) {
+    if (
+      vPassword.length < 6 ||
+      !/[A-Z]/.test(vPassword) ||
+      !/[a-z]/.test(vPassword) ||
+      !/[0-9]/.test(vPassword)
+    ) {
+      errores.push('El password (solo alta) debe tener mínimo 6 caracteres e incluir mayúscula, minúscula y número.');
+      marcarError(password);
+    } else {
+      marcarOk(password);
+    }
+  } else {
+    password.classList.remove('is-valid', 'is-invalid');
+  }
+
+  return errores;
+}
+
+// ========================= MODAL =========================
+
 function abrirModal(modo, usuario = null) {
-  errorForm.textContent = '';
+  limpiarErrores();
+  limpiarEstadosCampos();
 
   if (modo === 'nuevo') {
     modalTitulo.textContent = 'Nuevo usuario';
@@ -36,7 +238,7 @@ function abrirModal(modo, usuario = null) {
     apMaterno.value = '';
     telefono.value = '';
     email.value = '';
-    username.value = '';
+  //  username.value = '';
     tipoUsuario.value = '';
     password.value = '';
     password.disabled = false;
@@ -49,17 +251,20 @@ function abrirModal(modo, usuario = null) {
     apMaterno.value = usuario.apMaterno || '';
     telefono.value = usuario.telefono || '';
     email.value = usuario.email || usuario.emailMiembro || '';
-    username.value = usuario.username || '';
+   // username.value = usuario.username || '';
     tipoUsuario.value = usuario.tipoUsuario || usuario.rol || '';
     password.value = '';
-    password.disabled = true; // no cambiamos password desde aquí
+    password.disabled = true;
   }
+
   modalBackdrop.style.display = 'flex';
 }
 
 function cerrarModal() {
   modalBackdrop.style.display = 'none';
 }
+
+// ========================= CARGA Y TABLA =========================
 
 async function cargarUsuarios() {
   const q = buscador.value.trim();
@@ -104,9 +309,9 @@ function renderTabla(usuarios) {
     tdEmail.textContent = u.email || u.emailMiembro || '';
     tr.appendChild(tdEmail);
 
-    const tdUser = document.createElement('td');
-    tdUser.textContent = u.username || '';
-    tr.appendChild(tdUser);
+   // const tdUser = document.createElement('td');
+   // tdUser.textContent = u.username || '';
+   // tr.appendChild(tdUser);
 
     const tdRol = document.createElement('td');
     const spanRol = document.createElement('span');
@@ -154,21 +359,11 @@ async function eliminarUsuario(idUsuario, idMiembro) {
   }
 }
 
+// ========================= SUBMIT FORM =========================
+
 formUsuario.addEventListener('submit', async e => {
   e.preventDefault();
-  errorForm.textContent = '';
-
-  if (
-    !nombre.value.trim() ||
-    !apPaterno.value.trim() ||
-    !apMaterno.value.trim() ||
-    !email.value.trim() ||
-    !username.value.trim() ||
-    !tipoUsuario.value
-  ) {
-    errorForm.textContent = 'Por favor, llena todos los campos obligatorios.';
-    return;
-  }
+  limpiarErrores();
 
   const payload = {
     idUsuario: idUsuario.value ? Number(idUsuario.value) : null,
@@ -177,26 +372,30 @@ formUsuario.addEventListener('submit', async e => {
     apPaterno: apPaterno.value.trim(),
     apMaterno: apMaterno.value.trim(),
     telefono: telefono.value.trim(),
-    email: email.value.trim(), // USUARIO
-    emailMiembro: email.value.trim(), // MIEMBRO
-    username: username.value.trim(),
+    email: email.value.trim(),
+    emailMiembro: email.value.trim(),
+   // username: username.value.trim(),
     tipoUsuario: tipoUsuario.value,
     rol: tipoUsuario.value
   };
 
   const esNuevo = !payload.idUsuario;
+  if (esNuevo) {
+    payload.password = password.value.trim();
+  }
+
+  const errores = validarFormulario(esNuevo);
+  if (errores.length > 0) {
+    mostrarErrores(errores);
+    return;
+  }
+
   let url = '/admin/usuarios/api';
   let method = 'POST';
 
   if (!esNuevo) {
     url = `/admin/usuarios/api/${payload.idUsuario}/${payload.idMiembro}`;
     method = 'PUT';
-  } else {
-    payload.password = password.value;
-    if (!payload.password || !payload.password.trim()) {
-      errorForm.textContent = 'El password es obligatorio para crear un usuario.';
-      return;
-    }
   }
 
   const res = await fetch(url, {
@@ -209,13 +408,15 @@ formUsuario.addEventListener('submit', async e => {
   });
 
   if (!res.ok) {
-    errorForm.textContent = 'Ocurrió un error al guardar el usuario.';
+    mostrarErrores(['Ocurrió un error al guardar el usuario.']);
     return;
   }
 
   cerrarModal();
   await cargarUsuarios();
 });
+
+// ========================= EVENTOS VARIOS =========================
 
 btnNuevo.addEventListener('click', () => abrirModal('nuevo'));
 btnCerrarModal.addEventListener('click', cerrarModal);
@@ -229,3 +430,18 @@ buscador.addEventListener('input', () => {
 });
 
 document.addEventListener('DOMContentLoaded', cargarUsuarios);
+
+// Eventos para pintar en tiempo real
+[
+  nombre,
+  apPaterno,
+  apMaterno,
+  telefono,
+  email,
+  //username,
+  tipoUsuario,
+  password
+].forEach(campo => {
+  campo.addEventListener('input', () => validarCampoIndividual(campo));
+  campo.addEventListener('blur', () => validarCampoIndividual(campo));
+});

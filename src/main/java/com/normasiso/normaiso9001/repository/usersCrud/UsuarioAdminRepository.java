@@ -40,13 +40,9 @@ public class UsuarioAdminRepository {
             dto.setNombre(rs.getString("nombre"));
             dto.setApPaterno(rs.getString("ap_paterno"));
             dto.setApMaterno(rs.getString("ap_materno"));
-           
             dto.setTelefono(rs.getString("telefono"));
             dto.setEmailMiembro(rs.getString("email_miembro"));
             dto.setRol(rs.getString("rol"));
-
-            // Si tu DTO tiene campo idCompania podrías mapearlo aquí:
-            // dto.setIdCompania(rs.getLong("id_compania"));
 
             return dto;
         }
@@ -59,7 +55,6 @@ public class UsuarioAdminRepository {
                 "u.email, " +
                 "m.id_miembro, m.nombre, m.ap_paterno, m.ap_materno, " +
                 "m.telefono, m.email_miembro, m.rol " +
-                // si quieres también m.id_compania, añádelo aquí
                 "FROM \"USUARIO\" u " +
                 "LEFT JOIN \"MIEMBRO\" m ON m.email_miembro = u.email ";
     }
@@ -69,13 +64,12 @@ public class UsuarioAdminRepository {
     // ======================================================
     public Long obtenerIdCompaniaPorUsername(String username) {
         try {
-            // Buscamos la compañía del miembro asociado a ese usuario
             String sql =
                     "SELECT m.id_compania " +
-                    "FROM \"USUARIO\" u " +
-                    "JOIN \"MIEMBRO\" m ON m.id_usuario = u.id_usuario " +
-                    "WHERE u.username = ? " +
-                    "LIMIT 1";
+                            "FROM \"USUARIO\" u " +
+                            "JOIN \"MIEMBRO\" m ON m.id_usuario = u.id_usuario " +
+                            "WHERE u.username = ? " +
+                            "LIMIT 1";
 
             return jdbcTemplate.queryForObject(sql, Long.class, username);
         } catch (EmptyResultDataAccessException ex) {
@@ -99,17 +93,16 @@ public class UsuarioAdminRepository {
             String like = "%" + filtro.trim().toLowerCase() + "%";
 
             sql.append("AND (")
-               .append("LOWER(u.username)      LIKE ? OR ")
-               .append("LOWER(u.tipo_usuario)  LIKE ? OR ")
-               .append("LOWER(u.email)         LIKE ? OR ")
-               .append("LOWER(m.nombre)        LIKE ? OR ")
-               .append("LOWER(m.ap_paterno)    LIKE ? OR ")
-               .append("LOWER(m.ap_materno)    LIKE ? OR ")
-               .append("LOWER(m.email_miembro) LIKE ? OR ")
-               .append("LOWER(m.rol)           LIKE ? ")
-               .append(") ");
+                    .append("LOWER(u.username)      LIKE ? OR ")
+                    .append("LOWER(u.tipo_usuario)  LIKE ? OR ")
+                    .append("LOWER(u.email)         LIKE ? OR ")
+                    .append("LOWER(m.nombre)        LIKE ? OR ")
+                    .append("LOWER(m.ap_paterno)    LIKE ? OR ")
+                    .append("LOWER(m.ap_materno)    LIKE ? OR ")
+                    .append("LOWER(m.email_miembro) LIKE ? OR ")
+                    .append("LOWER(m.rol)           LIKE ? ")
+                    .append(") ");
 
-            // mismos parámetros para todos los LIKE de arriba
             for (int i = 0; i < 8; i++) {
                 params.add(like);
             }
@@ -126,7 +119,6 @@ public class UsuarioAdminRepository {
 
     // ======================================================
     //  (Opcional) LISTAR / BUSCAR SIN COMPAÑÍA
-    //  Si ya no lo usas en ningún lado, puedes borrarlo.
     // ======================================================
     public List<UsuarioMiembroDTO> buscar(String filtro) {
         String sql = baseSelect();
@@ -168,8 +160,8 @@ public class UsuarioAdminRepository {
 
         // 1) Insertamos en USUARIO
         String sqlUsuario = "INSERT INTO \"USUARIO\" " +
-                "(fecha_creacion, username, tipo_usuario, password, email) " +
-                "VALUES (CURRENT_DATE, ?, ?, ?, ?) " +
+                "(fecha_creacion, username, tipo_usuario, password, email, \"primerInicioSesion\") " +
+                "VALUES (CURRENT_DATE, ?, ?, ?, ?, 'No') " +
                 "RETURNING id_usuario, fecha_creacion";
 
         UsuarioMiembroDTO res = jdbcTemplate.queryForObject(
@@ -181,8 +173,8 @@ public class UsuarioAdminRepository {
                     return u;
                 },
                 dto.getUsername(),
-                dto.getTipoUsuario(),
-                dto.getPassword(),   // ya encriptado desde el controller
+                dto.getTipoUsuario(),   // tipo_usuario
+                dto.getPassword(),      // ya viene encriptado
                 dto.getEmail()
         );
 
@@ -197,13 +189,13 @@ public class UsuarioAdminRepository {
         Long idMiembro = jdbcTemplate.queryForObject(
                 sqlMiembro,
                 Long.class,
-                idCompania,               // <-- misma empresa
+                idCompania,
                 dto.getNombre(),
                 dto.getApPaterno(),
                 dto.getApMaterno(),
                 dto.getTelefono(),
-                dto.getEmail(),           // mismo correo que en USUARIO
-                dto.getTipoUsuario(),      // rol = tipo_usuario
+                dto.getEmail(),          // mismo correo
+                dto.getRol() != null ? dto.getRol() : dto.getTipoUsuario(), // por si acaso
                 idUsuario
         );
 
@@ -211,8 +203,10 @@ public class UsuarioAdminRepository {
         dto.setIdMiembro(idMiembro);
         dto.setFechaCreacion(res.getFechaCreacion());
         dto.setEmailMiembro(dto.getEmail());
-        dto.setRol(dto.getTipoUsuario());
-        // dto.setIdCompania(idCompania); // si tu DTO tiene ese campo
+
+        if (dto.getRol() == null) {
+            dto.setRol(dto.getTipoUsuario());
+        }
 
         return dto;
     }
@@ -243,10 +237,9 @@ public class UsuarioAdminRepository {
                 dto.getNombre(),
                 dto.getApPaterno(),
                 dto.getApMaterno(),
-            
                 dto.getTelefono(),
                 dto.getEmail(),
-                dto.getTipoUsuario(),
+                dto.getRol() != null ? dto.getRol() : dto.getTipoUsuario(),
                 idMiembro
         );
     }
@@ -260,5 +253,16 @@ public class UsuarioAdminRepository {
 
         String sqlU = "DELETE FROM \"USUARIO\" WHERE id_usuario = ?";
         jdbcTemplate.update(sqlU, idUsuario);
+    }
+
+    // ====================== EXISTS USERNAME (para generador) ======================
+    /**
+     * Indica si ya existe un registro en USUARIO con ese username.
+     * Se usa en UsernameGeneratorService para garantizar unicidad.
+     */
+    public boolean existsUsuarioByUsername(String username) {
+        String sql = "SELECT COUNT(*) FROM \"USUARIO\" WHERE username = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, username);
+        return count != null && count > 0;
     }
 }

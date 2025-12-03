@@ -3,6 +3,7 @@ package com.normasiso.normaiso9001.controller.usersCrud;
 
 import com.normasiso.normaiso9001.model.usersCrud.UsuarioMiembroDTO;
 import com.normasiso.normaiso9001.repository.usersCrud.UsuarioAdminRepository;
+import com.normasiso.normaiso9001.service.UsernameGeneratorService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -21,11 +22,14 @@ public class UsuarioAdminController {
 
     private final UsuarioAdminRepository usuarioRepo;
     private final PasswordEncoder passwordEncoder;
+    private final UsernameGeneratorService usernameGeneratorService;
 
     public UsuarioAdminController(UsuarioAdminRepository usuarioRepo,
-                                  PasswordEncoder passwordEncoder) {
+                                  PasswordEncoder passwordEncoder,
+                                  UsernameGeneratorService usernameGeneratorService) {
         this.usuarioRepo = usuarioRepo;
         this.passwordEncoder = passwordEncoder;
+        this.usernameGeneratorService = usernameGeneratorService;
     }
 
     /**
@@ -81,15 +85,26 @@ public class UsuarioAdminController {
     /**
      * POST /admin/usuarios/api
      * Crea un nuevo USUARIO + MIEMBRO en la misma compañía del usuario logueado.
+     * El username se genera automáticamente si viene vacío.
      */
     @PostMapping("/api")
     @ResponseBody
     public ResponseEntity<UsuarioMiembroDTO> crear(@RequestBody UsuarioMiembroDTO dto,
                                                    Authentication authentication) {
 
-        // Validación mínima: password obligatorio
+        // Validación mínima: password obligatorio (en texto plano aquí)
         if (dto.getPassword() == null || dto.getPassword().isBlank()) {
             return ResponseEntity.badRequest().build();
+        }
+
+        // Si NO viene username desde el frontend, lo generamos automático
+        if (dto.getUsername() == null || dto.getUsername().isBlank()) {
+            String usernameGenerado = usernameGeneratorService.generateUniqueUsername(
+                    dto.getNombre(),
+                    dto.getApPaterno(),
+                    dto.getApMaterno()
+            );
+            dto.setUsername(usernameGenerado);
         }
 
         // Encriptar contraseña

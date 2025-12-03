@@ -1,31 +1,37 @@
-// src/main/java/com/normasiso/normaiso9001/model/usuario/UsuarioMiembroDTO.java
 package com.normasiso.normaiso9001.model.usersCrud;
 
 import java.time.LocalDate;
 
 public class UsuarioMiembroDTO {
 
-    // Campos USUARIO
+    // =========================
+    //        USUARIO
+    // =========================
     private Long idUsuario;
     private LocalDate fechaCreacion;
     private String username;
-    private String tipoUsuario;
-    private String password;          // solo para altas
-    private String email;
+    private String tipoUsuario;   // ADMINISTRADOR, SGI, etc.
+    private String password;      // solo para ALTA
+    private String email;         // correo del usuario
     private String primerInicioSesi;
-    
 
-    // Campos MIEMBRO
+    // =========================
+    //        MIEMBRO
+    // =========================
     private Long idMiembro;
+    private Long idCompania;      // MUY importante para búsqueda y filtrado
     private String nombre;
     private String apPaterno;
     private String apMaterno;
     private String rfcMiembro;
     private String telefono;
-    private String emailMiembro;
-    private String rol;
+    private String emailMiembro;  // igual que email
+    private String rol;           // es igual a tipoUsuario
 
-    // ===== Getters y Setters =====
+    // =========================
+    //     GETTERS & SETTERS
+    // =========================
+
     public Long getIdUsuario() { return idUsuario; }
     public void setIdUsuario(Long idUsuario) { this.idUsuario = idUsuario; }
 
@@ -49,6 +55,9 @@ public class UsuarioMiembroDTO {
 
     public Long getIdMiembro() { return idMiembro; }
     public void setIdMiembro(Long idMiembro) { this.idMiembro = idMiembro; }
+
+    public Long getIdCompania() { return idCompania; }
+    public void setIdCompania(Long idCompania) { this.idCompania = idCompania; }
 
     public String getNombre() { return nombre; }
     public void setNombre(String nombre) { this.nombre = nombre; }
