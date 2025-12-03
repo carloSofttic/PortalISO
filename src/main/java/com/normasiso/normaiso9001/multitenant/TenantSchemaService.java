@@ -16,20 +16,45 @@ public class TenantSchemaService {
      * Crea un schema para la organización y dentro la tabla formato.
      */
     public void crearSchemaYTablaFormato(String schemaName) {
-        // MUY IMPORTANTE: schemaName debe venir saneado (solo letras, números, guiones bajos)
+        // MUY IMPORTANTE: schemaName debe venir saneado (solo letras, números, guiones
+        // bajos)
         String createSchemaSql = "CREATE SCHEMA " + schemaName + ";";
 
-        String createTableSql = "CREATE TABLE " + schemaName + ".formato ("
-                + "id_formato BIGSERIAL PRIMARY KEY, "
-                + "nombre_format VARCHAR(255), "
-                + "codigo_format VARCHAR(100), "
-                + "tipo_doc_format VARCHAR(100), "
+        String createTableSql = "CREATE TABLE " + schemaName + ".DOCUMENTO ("
+                + "id_documento BIGSERIAL PRIMARY KEY, "
+                + "nombre_documento VARCHAR(255), "
+                + "codigo_documento VARCHAR(14), "
+                + "tipo_doc_format VARCHAR(4), "
                 + "fecha_vencimiento_format DATE, "
-                + "status_format VARCHAR(50) DEFAULT 'revision'"
+                + "fecha_cambio_doc DATE, "
+                + "fecha_emision_doc DATE, "
+                + "status_format VARCHAR(50) DEFAULT 'Revision', "
+                + "metodo_resguardo VARCHAR(20) DEFAULT 'Digital' "
+                + ");";
+
+        String createTable2Sql = "CREATE TABLE " + schemaName + ".PROCESO ("
+                + "id_proceso BIGSERIAL PRIMARY KEY, "
+                + "nombre_proceso VARCHAR(255) "
+                + ");";
+
+        String createTable3Sql = "CREATE TABLE " + schemaName + ".PROCESO_DOC ("
+                + "  id_procesoDoc BIGSERIAL PRIMARY KEY, "
+                + "  id_proceso BIGINT NOT NULL, "
+                + "  id_documento BIGINT NOT NULL, "
+                + "  FOREIGN KEY (id_proceso) "
+                + "      REFERENCES PROCESO(id_proceso) "
+                + "      ON UPDATE CASCADE "
+                + "      ON DELETE CASCADE, "
+                + "  FOREIGN KEY (id_documento) "
+                + "      REFERENCES DOCUMENTO(id_documento) "
+                + "      ON UPDATE CASCADE "
+                + "      ON DELETE CASCADE "
                 + ");";
 
         jdbcTemplate.execute(createSchemaSql);
         jdbcTemplate.execute(createTableSql);
+        jdbcTemplate.execute(createTable2Sql);
+        jdbcTemplate.execute(createTable3Sql);
     }
 
     /**
@@ -46,8 +71,8 @@ public class TenantSchemaService {
                 .replaceAll("[úùü]", "u")
                 .replaceAll("[ñ]", "n")
                 .replaceAll("[^a-z0-9]+", "_") // todo lo raro -> _
-                .replaceAll("^_+", "")         // quitar _ inicial
-                .replaceAll("_+$", "");        // quitar _ final
+                .replaceAll("^_+", "") // quitar _ inicial
+                .replaceAll("_+$", ""); // quitar _ final
 
         if (slug.isEmpty()) {
             slug = "empresa";

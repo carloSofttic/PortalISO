@@ -58,7 +58,7 @@ public class SecurityConfig {
                 ).permitAll()
 
                 // Solo ADMINISTRADOR y SGI pueden gestionar usuarios y licencias
-                .requestMatchers("/usuarios/**", "/licencias/**, /usersCrud/**")
+                .requestMatchers("/usuarios/**", "/licencias/**", "/usersCrud/**", "admin/**")
                     .hasAnyRole("ADMINISTRADOR", "SGI")
 
                 // El resto requiere estar autenticado

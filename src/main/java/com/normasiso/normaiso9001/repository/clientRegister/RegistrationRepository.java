@@ -99,9 +99,9 @@ public class RegistrationRepository {
   public Long insertUsuario(String username, String correo, String passwordHash, boolean enabled) {
     String sql = """
       INSERT INTO public."USUARIO"
-        ("fecha_creacion","username","tipo_usuario","password","email")
+        ("fecha_creacion","username","tipo_usuario","password","email","representanteLegal")
       VALUES
-        (CURRENT_DATE, ?, 'ADMINISTRADOR', ?, ?)
+        (CURRENT_DATE, ?, 'ADMINISTRADOR', ?, ?,'Si')
       RETURNING "id_usuario"
       """;
 

@@ -38,9 +38,9 @@
         <th:block th:if="${tipoUsuario == 'ADMINISTRADOR' or tipoUsuario == 'SGI'}">
 
           <!-- Administrar usuarios (marcado como activo) -->
-          <a th:href="@{/admin/usuarios}" class="item" th:classappend="${active=='usuarios' ? ' active' : ''}">
+          <a th:href="@{/dashboard}" class="item" th:classappend="${active=='usuarios' ? ' active' : ''}">
             <span class="icon">👥</span>
-            <span class="text">Administrar usuarios</span>
+            <span class="text">Mi Dashboard</span>
           </a>
 
           <a href="/licencias" class="item">
@@ -323,6 +323,8 @@
   <script src="/js/dashboard.js"></script>
   <!-- JS específico de usuarios -->
   <script src="/js/usersCrud/usuariosAdmin.js"></script>
+  
+  <!--<script src="/js/seguridad-global.js"></script>-->
 </body>
 
 </html>
