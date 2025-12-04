@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Procedimientos — Plataforma ISO</title>
+
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/proceduresAdmin.css}">
+</head>
+
+<body>
+
+    <button class="menu-toggle">☰</button>
+
+    <div class="layout">
+
+        <!-- ============ SIDEBAR ============ -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                Certificaciones ISO
+            </div>
+
+            <button class="sidebar-collapse-btn" type="button" title="Colapsar/expandir menú">⮜</button>
+
+            <nav class="sidebar-nav">
+
+                <!-- SOLO ADMIN / SGI (igual que en dashboard, recorta si quieres) -->
+                <th:block th:if="${tipoUsuario == 'ADMINISTRADOR' or tipoUsuario == 'SGI'}">
+                    <a th:href="@{/admin/usuarios}" class="item">
+                        <span class="icon">👥</span>
+                        <span class="text">Administrar usuarios</span>
+                    </a>
+
+                    <a th:href="@{/licencias}" class="item">
+                        <span class="icon">🎫</span>
+                        <span class="text">Asignar licencias</span>
+                    </a>
+                </th:block>
+
+                <!-- LÍDERES -->
+                <th:block th:if="${tipoUsuario != 'ADMINISTRADOR' and tipoUsuario != 'SGI'}">
+
+                    <div class="item-group">
+                        <a href="javascript:void(0)" class="item submenu-toggle open">
+                            <span class="icon">📝</span>
+                            <span class="text">Crear archivo</span>
+                            <span class="arrow">▾</span>
+                        </a>
+
+                        <div class="submenu show" id="submenu-crear-archivo">
+                            <a th:href="@{/procedimientos}" class="submenu-item submenu-item-active">
+                                📝 Procedimientos
+                            </a>
+                            <a th:href="@{/archivos/formato/nuevo}" class="submenu-item">
+                                📝 Formatos
+                            </a>
+                            <a th:href="@{/archivos/instructivo/nuevo}" class="submenu-item">
+                                📝 Instructivos
+                            </a>
+                        </div>
+                    </div>
+
+                    <a href="#" class="item">
+                        <span class="icon">📊</span>
+                        <span class="text">Mi progreso</span>
+                    </a>
+
+                    <a href="#" class="item">
+                        <span class="icon">📁</span>
+                        <span class="text">Documentos asignados</span>
+                    </a>
+
+                    <a href="#" class="item">
+                        <span class="icon">✅</span>
+                        <span class="text">Mis actividades</span>
+                    </a>
+
+                </th:block>
+            </nav>
+        </aside>
+
+        <!-- ============ MAIN ============ -->
+        <main class="main">
+
+            <!-- TOPBAR -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <span class="topbar-title">Procedimientos</span>
+                </div>
+
+                <div class="topbar-right">
+
+                    <!-- Notificaciones (igual que en dashboard) -->
+                    <div class="notifications">
+                        <button class="icon-btn" type="button" title="Notificaciones">
+                            🔔
+                            <span class="badge">2</span>
+                        </button>
+
+                        <div class="notifications-panel">
+                            <div class="notifications-header">
+                                <span>Notificaciones</span>
+                                <span>2 nuevas</span>
+                            </div>
+
+                            <div class="notification-item">
+                                <div class="notification-title">Onboarding incompleto</div>
+                                <div class="notification-body">
+                                    Aún tienes pasos pendientes en el proceso inicial de la compañía.
+                                </div>
+                                <div class="notification-meta">Hace 10 min</div>
+                            </div>
+
+                            <div class="notification-item">
+                                <div class="notification-title">Nueva tarea asignada</div>
+                                <div class="notification-body">
+                                    Tienes un nuevo documento para revisar y completar.
+                                </div>
+                                <div class="notification-meta">Hace 1 hora</div>
+                            </div>
+
+                            <div class="notifications-footer">
+                                <a href="#">Ver todas</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Menú usuario -->
+                    <div class="user-menu">
+                        <div class="user-chip">
+                            <span class="user-avatar">
+                                <span th:text="${#strings.substring(vm.username,0,1)}">U</span>
+                            </span>
+                            <div class="user-info">
+                                <span class="user-name" th:text="${vm.username}">Usuario</span>
+                                <span class="user-role" th:text="${tipoUsuario}">ROL</span>
+                            </div>
+                        </div>
+
+                        <div class="user-dropdown">
+                            <a href="/perfil" class="dropdown-item">Mi perfil</a>
+                            <a href="/configuracion" class="dropdown-item">Configuración</a>
+
+                            <form th:action="@{/logout}" method="post" class="dropdown-item logout-form">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                <button type="submit" class="logout-btn">Cerrar sesión</button>
+                            </form>
+                        </div>
+                    </div>
+
+                </div>
+            </header>
+
+            <!-- CONTENIDO -->
+            <div class="content-wrap">
+
+                <div th:if="${ok}" class="alert success" th:text="${ok}"></div>
+                <div th:if="${error}" class="alert error" th:text="${error}"></div>
+
+                <div class="card card-lg">
+                    <div class="title">Gestión de procedimientos</div>
+                    <div class="subtitle">
+                        Visualiza, busca y administra los procedimientos que tienes asignados.
+                    </div>
+
+                    <!-- Barra superior: buscador + botón nuevo -->
+                    <div class="table-toolbar">
+                        <input id="buscarProcedimiento" type="text" class="form-input search-input"
+                            placeholder="Buscar por código, nombre o proceso...">
+
+                        <button type="button" class="btn" id="btnNuevoProcedimiento">
+                            + Nuevo procedimiento
+                        </button>
+                    </div>
+
+                    <!-- Tabla -->
+                    <div class="table-wrapper">
+                        <table class="table-dashboard">
+                            <thead>
+                                <tr>
+                                    <th>Proceso</th>
+                                    <th>Código</th>
+                                    <th>Nombre del procedimiento</th>
+                                    <th>Emisión</th>
+                                    <th>Vencimiento</th>
+                                    <th>Estado</th>
+                                    <th>Resguardo</th>
+                                    <th style="text-align:center;">Acciones</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="tbodyProcedimientos">
+                                <tr th:each="p : ${procedimientos}">
+                                    <td th:text="${p.nombreProceso}">Proceso</td>
+                                    <td th:text="${p.codigoDocumento}">PP-001</td>
+                                    <td th:text="${p.nombreDocumento}">Control de documentos</td>
+                                    <td th:text="${p.fechaEmision}">2025-01-01</td>
+                                    <td th:text="${p.fechaVencimiento}">2026-01-01</td>
+                                    <td th:text="${p.statusFormat}">Vigente</td>
+                                    <td th:text="${p.metodoResguardo}">Digital</td>
+                                    <td class="acciones">
+                                        <button type="button" class="btn btn-secondary btn-xs btnEditar"
+                                            th:attr="data-id=${p.idDocumento}">
+                                            Editar
+                                        </button>
+                                        <button type="button" class="btn btn-danger btn-xs btnEliminar"
+                                            th:attr="data-id=${p.idDocumento}">
+                                            Eliminar
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr th:if="${#lists.isEmpty(procedimientos)}">
+                                    <td colspan="8" class="table-empty">
+                                        No se encontraron procedimientos registrados.
+                                    </td>
+                                </tr>
+                            </tbody>
+
+                        </table>
+                    </div>
+
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- ============ MODAL ALTA / EDICIÓN ============ -->
+    <div id="modalProcedimiento" class="modal-backdrop">
+        <div class="modal-card">
+
+            <div class="modal-header">
+                <h3 id="modalTitulo">Nuevo procedimiento</h3>
+                <button type="button" class="modal-close" id="btnCerrarModal">×</button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Aquí pondrás tu <form> real con th:action al guardar/editar -->
+                <form id="formProcedimiento">
+                    <input type="hidden" id="idDocumento">
+
+                    <div class="form-row two-cols">
+                        <div class="form-group">
+                            <label class="form-label">Código *</label>
+                            <input type="text" class="form-input" id="codigoDocumento">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Nombre *</label>
+                            <input type="text" class="form-input" id="nombreDocumento">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group full">
+                            <label class="form-label">Proceso *</label>
+                            <input type="text" class="form-input" id="nombreProceso">
+                        </div>
+                    </div>
+
+                    <!-- Aquí puedes ir agregando más campos según tu modelo real -->
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="btnCancelarModal">Cancelar</button>
+                <button type="button" class="btn" id="btnGuardarModal">Guardar</button>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="/js/dashboard.js"></script>
+
+    <script>
+        // ===============================
+        // Búsqueda AJAX en tiempo real
+        // ===============================
+        const inputBusqueda = document.getElementById('buscarProcedimiento');
+        const tbody = document.getElementById('tbodyProcedimientos');
+
+        if (inputBusqueda) {
+            inputBusqueda.addEventListener('input', () => {
+                const q = inputBusqueda.value;
+
+                fetch('/procedimientos/buscar?q=' + encodeURIComponent(q))
+                    .then(res => res.json())
+                    .then(data => {
+                        tbody.innerHTML = '';
+
+                        if (!data || data.length === 0) {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = '<td colspan="8" style="text-align:center; padding:0.75rem;">Sin resultados.</td>';
+                            tbody.appendChild(tr);
+                            return;
+                        }
+
+                        data.forEach(p => {
+                            const tr = document.createElement('tr');
+
+                            tr.innerHTML = `
+            <td>${p.nombreProceso || ''}</td>
+            <td>${p.codigoDocumento || ''}</td>
+            <td>${p.nombreDocumento || ''}</td>
+            <td>${p.fechaEmision || ''}</td>
+            <td>${p.fechaVencimiento || ''}</td>
+            <td>${p.statusFormat || ''}</td>
+            <td>${p.metodoResguardo || ''}</td>
+            <td class="acciones">
+              <button type="button" class="btn btn-secondary btn-xs btnEditar" data-id="${p.idDocumento}">Editar</button>
+              <button type="button" class="btn btn-danger btn-xs btnEliminar" data-id="${p.idDocumento}">Eliminar</button>
+            </td>
+          `;
+                            tbody.appendChild(tr);
+                        });
+                    })
+                    .catch(err => {
+                        console.error('Error en búsqueda AJAX:', err);
+                    });
+            });
+        }
+
+        // ===============================
+        // Modal alta / edición (skeleton)
+        // ===============================
+        const modal = document.getElementById('modalProcedimiento');
+        const btnNuevo = document.getElementById('btnNuevoProcedimiento');
+        const btnCerrar = document.getElementById('btnCerrarModal');
+        const btnCancelar = document.getElementById('btnCancelarModal');
+
+        function abrirModal() {
+            modal.classList.add('show');
+        }
+
+        function cerrarModal() {
+            modal.classList.remove('show');
+        }
+
+        if (btnNuevo) btnNuevo.addEventListener('click', abrirModal);
+        if (btnCerrar) btnCerrar.addEventListener('click', cerrarModal);
+        if (btnCancelar) btnCancelar.addEventListener('click', cerrarModal);
+
+        // Aquí después puedes agregar listeners para .btnEditar y .btnEliminar
+    </script>
+
+</body>
+
+</html>

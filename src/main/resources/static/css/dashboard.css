@@ -160,6 +160,46 @@
      color: #ecfdf5;
    }
    
+   /*-----------------Submenu--------------------*/
+   .item-group .submenu {
+  display: none;
+  padding-left: 2.5rem;   /* alineado bajo el icono */
+}
+
+.item-group .submenu.show {
+  display: block;
+}
+
+.submenu-item {
+  display: block;
+  padding: 6px 0;
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
+
+.submenu-toggle .arrow {
+  margin-left: auto;
+  transition: transform 0.25s ease;
+}
+
+.submenu-toggle.open .arrow {
+  transform: rotate(180deg);
+}
+
+/* ===== cuando el sidebar está colapsado ===== */
+.sidebar.collapsed .item-group .submenu {
+  display: none !important;   /* nunca mostrar submenú colapsado */
+}
+
+.sidebar.collapsed .submenu-toggle .arrow {
+  display: none;              /* quita la flechita, deja solo el icono */
+}
+
+/* opcional, pero ayuda a centrar el icono 📝 */
+.sidebar.collapsed .submenu-toggle {
+  justify-content: center;
+}
+
    /* ===== MODO COLAPSADO (escritorio) ===== */
    
    .sidebar.collapsed {

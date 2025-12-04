@@ -3,14 +3,25 @@
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 public class HashTest {
-    public static void main(String[] args) {
-        String rawPassword = "1234";
-        String hash = "$2a$10$..dWc/oCv8ocWIm5fK6kV.zc.EQoXZcy3FgHl/qmYC2iBmWn5Q70a";
 
-        boolean ok = new BCryptPasswordEncoder().matches(rawPassword, hash);
-        System.out.println("Concide la contraseña '1234'? "+ok);
-        String hash = new BCryptPasswordEncoder().encode(rawPassword);
-        System.out.println("hash generado para '" +rawPassword+ "':");
+    public static void main(String[] args) {
+
+        // 1) La contraseña en texto plano que quieres hashear
+        String rawPassword = "Entrar.12345";
+
+        // 2) Crea el encoder de BCrypt
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+
+        // 3) Genera el hash
+        String hash = encoder.encode(rawPassword);
+
+        // 4) Muestra el resultado
+        System.out.println("Hash generado para '" + rawPassword + "':");
         System.out.println(hash);
+
+        // (Opcional) Verificar que sí matchea
+        boolean coincide = encoder.matches(rawPassword, hash);
+        System.out.println("¿Coincide el hash con la contraseña original? " + coincide);
     }
-}*/
+}
+*/

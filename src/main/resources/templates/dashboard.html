@@ -131,11 +131,28 @@
              ========================================== -->
         <th:block th:if="${tipoUsuario != 'ADMINISTRADOR' and tipoUsuario != 'SGI'}">
 
-          <!-- Crear un nuevo archivo/documento -->
-          <a href="/archivos/nuevo" class="item">
-            <span class="icon">📝</span>
-            <span class="text">Crear archivo</span>
-          </a>
+          <!-- Grupo Crear archivo + submenu -->
+          <div class="item-group">
+            <!-- Trigger del submenú -->
+            <a href="javascript:void(0)" class="item submenu-toggle">
+              <span class="icon">📝</span>
+              <span class="text">Crear archivo</span>
+              <span class="arrow">▾</span>
+            </a>
+
+            <!-- Submenú -->
+            <div class="submenu" id="submenu-crear-archivo">
+              <a  th:href="@{/procedimientos}" class="submenu-item">
+                📝 Crear procedimiento
+              </a>
+              <a href="/archivos/formato/nuevo" class="submenu-item">
+                📝 Crear formato
+              </a>
+              <a href="/archivos/instructivo/nuevo" class="submenu-item">
+                📝 Crear instructivo
+              </a>
+            </div>
+          </div>
 
           <!-- Vista de progreso personal -->
           <a href="#" class="item">
