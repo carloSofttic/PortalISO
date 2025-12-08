@@ -8,11 +8,12 @@ public class ProcedimientoListaDTO {
     private String nombreProceso;
     private String nombreDocumento;
     private String codigoDocumento;
-    private String tipoDocFormat;           // IT / PP / F...
+    private String codigo_tipodoc;           // IT / PP / F...
     private LocalDate fechaVencimiento;
     private LocalDate fechaCambio;
     private LocalDate fechaEmision;
-    private String statusFormat;            // revision / vigente / etc.
+    private String statusFormat;
+    private String statusValidity;            // revision / vigente / etc.
     private String metodoResguardo;
 
     // ===== Getters & Setters =====
@@ -49,11 +50,11 @@ public class ProcedimientoListaDTO {
     }
 
     public String getTipoDocFormat() {
-        return tipoDocFormat;
+        return codigo_tipodoc;
     }
 
-    public void setTipoDocFormat(String tipoDocFormat) {
-        this.tipoDocFormat = tipoDocFormat;
+    public void setTipoDocFormat(String codigo_tipodoc) {
+        this.codigo_tipodoc = codigo_tipodoc;
     }
 
     public LocalDate getFechaVencimiento() {
@@ -86,6 +87,14 @@ public class ProcedimientoListaDTO {
 
     public void setStatusFormat(String statusFormat) {
         this.statusFormat = statusFormat;
+    }
+
+    public String getStatusValidity(){
+        return statusValidity;
+    }
+
+    public void setStatusValidity(String statusValidity){
+        this.statusValidity = statusValidity;
     }
 
     public String getMetodoResguardo() {

@@ -24,8 +24,7 @@ public class ProcedimientoRepository {
     // ============================================================
     public String obtenerSchemaPorUsuario(String username) {
 
-        String sql =
-                "SELECT c.schema_name " +
+        String sql = "SELECT c.schema_name " +
                 "FROM public.\"MIEMBRO\" m " +
                 "INNER JOIN public.\"USUARIO\" u ON u.id_usuario = m.id_usuario " +
                 "INNER JOIN public.\"COMPANIA\" c ON c.id_compania = m.id_compania " +
@@ -35,8 +34,7 @@ public class ProcedimientoRepository {
             return jdbcTemplate.queryForObject(sql, String.class, username);
         } catch (EmptyResultDataAccessException ex) {
             throw new IllegalStateException(
-                    "❌ No se encontró un schema para el usuario: " + username
-            );
+                    "❌ No se encontró un schema para el usuario: " + username);
         }
     }
 
@@ -51,11 +49,12 @@ public class ProcedimientoRepository {
             dto.setIdDocumento(rs.getLong("id_documento"));
             dto.setNombreDocumento(rs.getString("nombre_documento"));
             dto.setCodigoDocumento(rs.getString("codigo_documento"));
-            dto.setTipoDocFormat(rs.getString("tipo_doc_format"));
+            dto.setTipoDocFormat(rs.getString("codigo_tipodoc"));
             dto.setFechaVencimiento(rs.getObject("fecha_vencimiento_format", java.time.LocalDate.class));
             dto.setFechaCambio(rs.getObject("fecha_cambio_doc", java.time.LocalDate.class));
             dto.setFechaEmision(rs.getObject("fecha_emision_doc", java.time.LocalDate.class));
             dto.setStatusFormat(rs.getString("status_format"));
+            dto.setStatusValidity(rs.getString("status_validiy"));
             dto.setMetodoResguardo(rs.getString("metodo_resguardo"));
             return dto;
         }
@@ -69,18 +68,19 @@ public class ProcedimientoRepository {
         // 🔥 Obtenemos el schema REAL
         String schema = obtenerSchemaPorUsuario(username);
 
-        String sql =
-                "SELECT p.nombre_proceso, " +
+        String sql = "SELECT p.nombre_proceso, " +
                 "       d.id_documento, " +
                 "       d.nombre_documento, " +
                 "       d.codigo_documento, " +
-                "       d.tipo_doc_format, " +
+                "       tp.codigo_tipodoc, " +
                 "       d.fecha_vencimiento_format, " +
                 "       d.fecha_cambio_doc, " +
                 "       d.fecha_emision_doc, " +
                 "       d.status_format, " +
-                "       d.metodo_resguardo " +
+                "       d.metodo_resguardo, " +
+                "       d.status_validiy " +
                 "FROM " + schema + ".documento d " +
+                "INNER JOIN " + schema + ".tipo_doc tp ON tp.id_tipodoc = d.id_tipodoc " +
                 "INNER JOIN " + schema + ".proceso_doc pd ON d.id_documento = pd.id_documento " +
                 "INNER JOIN " + schema + ".proceso p ON pd.id_proceso = p.id_proceso " +
                 "INNER JOIN " + schema + ".usuario_doc ud ON d.id_documento = ud.id_documento " +
@@ -101,18 +101,19 @@ public class ProcedimientoRepository {
 
         String like = "%" + filtro.trim().toLowerCase() + "%";
 
-        String sql =
-                "SELECT p.nombre_proceso, " +
+        String sql = "SELECT p.nombre_proceso, " +
                 "       d.id_documento, " +
                 "       d.nombre_documento, " +
                 "       d.codigo_documento, " +
-                "       d.tipo_doc_format, " +
+                "       tp.codigo_tipodoc, " +
                 "       d.fecha_vencimiento_format, " +
                 "       d.fecha_cambio_doc, " +
                 "       d.fecha_emision_doc, " +
                 "       d.status_format, " +
-                "       d.metodo_resguardo " +
+                "       d.metodo_resguardo, " +
+                "       d.status_validiy " +
                 "FROM " + schema + ".documento d " +
+                "INNER JOIN " + schema + ".tipo_doc tp ON tp.id_tipodoc = d.id_tipodoc " +
                 "INNER JOIN " + schema + ".proceso_doc pd ON d.id_documento = pd.id_documento " +
                 "INNER JOIN " + schema + ".proceso p ON pd.id_proceso = p.id_proceso " +
                 "INNER JOIN " + schema + ".usuario_doc ud ON d.id_documento = ud.id_documento " +
@@ -126,7 +127,6 @@ public class ProcedimientoRepository {
         return jdbcTemplate.query(
                 sql,
                 new ProcedimientoRowMapper(),
-                username, like, like, like
-        );
+                username, like, like, like);
     }
 }
