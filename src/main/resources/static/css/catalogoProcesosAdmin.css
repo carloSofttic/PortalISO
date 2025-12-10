@@ -1,0 +1,234 @@
+/* ================================
+   FORMULARIO COMPACTO: PROCESOS
+   (el que está arriba de la tabla)
+   ================================ */
+
+.process-form {
+  margin-top: 1.5rem;
+  margin-bottom: 1.25rem;          /* separación respecto al buscador */
+  padding: 1rem 1.25rem;
+  border-radius: 0.75rem;
+  background: #020617;             /* mismo tono que tarjetas internas */
+  border: 1px solid #111827;
+
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 1.25rem;
+  align-items: flex-end;           /* alinea inputs con botón */
+}
+
+.process-form-group {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.process-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #9ca3af;
+  margin-bottom: 0.25rem;
+}
+
+.process-input {
+  width: 100%;
+  border-radius: 0.6rem;
+  border: 1px solid #111827;
+  background: #020617;
+  color: #e5e7eb;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.88rem;
+}
+
+.process-input::placeholder {
+  color: #6b7280;
+}
+
+.process-input:focus {
+  outline: none;
+  border-color: #22c55e;
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.45);
+}
+
+.process-form-actions {
+  margin-left: auto;               /* botón alineado a la derecha */
+}
+
+.process-error {
+  width: 100%;
+  margin-top: 0.25rem;
+  font-size: 0.78rem;
+  color: #f97373;
+}
+
+/* Responsive: en móviles cada campo en una fila */
+@media (max-width: 768px) {
+  .process-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .process-form-actions {
+    margin-left: 0;
+    align-self: flex-end;
+  }
+}
+
+
+/* ============================
+   TOOLBAR BUSCADOR + REFRESCAR
+   (la barra justo debajo del form)
+   ============================ */
+
+.catalog-toolbar {
+  margin-top: 1.75rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06); /* línea separadora del form */
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* input de búsqueda, mismo estilo general que tus form-input */
+.catalog-toolbar .catalog-search {
+  flex: 1;
+  max-width: 420px;
+
+  height: 42px;                   /* altura más grande */
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  border-radius: 10px;
+  border: 1px solid #1f2937;
+  background-color: #020817;
+  color: #e5e7eb;
+}
+
+.catalog-toolbar .catalog-search::placeholder {
+  color: #6b7280;
+  opacity: 0.85;
+}
+
+/* botón refrescar (usa btn + btn-secondary del dashboard, pero lo afinamos) */
+.catalog-toolbar .btn.btn-secondary {
+  background: #111827;
+  color: #e5e7eb;
+  padding-inline: 1.5rem;
+  border-radius: 999px;
+  border: 1px solid #1f2937;
+
+  height: 42px;                    /* alineado con el input */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.catalog-toolbar .btn.btn-secondary:hover {
+  background: #1f2937;
+}
+
+
+/* ============================
+   TABLA DE PROCESOS
+   ============================ */
+
+.catalog-table-wrapper {
+  margin-top: 1.25rem;
+  border-radius: 1rem;
+  border: 1px solid #111827;
+  background: #020617;
+  overflow: hidden;
+
+  max-width: 620px;          /* ← tabla más pequeña */
+          /* centrada */
+  margin-right: auto;
+}
+
+.catalog-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.catalog-table thead {
+  background: #020617;
+}
+
+.catalog-table th,
+.catalog-table td {
+  padding: 0.45rem 0.75rem;        /* menos padding para filas más compactas */
+  border-bottom: 1px solid #111827;
+  text-align: left;
+}
+
+/* Anchos más compactos para las primeras columnas */
+.catalog-table th:nth-child(1) {   /* ID Proceso */
+  width: 80px;
+}
+.catalog-table th:nth-child(2) {   /* Código */
+  width: 80px;
+}
+
+/* SIN width fijo en la columna de Acciones: se ajusta al contenido */
+.catalog-table th {
+  font-weight: 600;
+  color: #9ca3af;
+  white-space: nowrap;
+  font-size: 0.8rem;
+  letter-spacing: 0.03em;
+}
+
+.catalog-table tbody tr:hover td {
+  background: #020617;
+}
+
+/* columna de acciones: pegada al nombre del proceso */
+.catalog-table .col-acciones {
+  text-align: left;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  white-space: nowrap;
+}
+
+/* mensaje sin registros */
+.catalog-empty {
+  text-align: center;
+  padding: 1rem 0.75rem;
+  color: #9ca3af;
+}
+
+
+/* ============================
+   BOTONES EDITAR / ELIMINAR
+   ============================ */
+
+/* tamaño XS que ya usas en la tabla */
+.btn-xs {
+  padding: 0.25rem 0.7rem;
+  font-size: 0.75rem;
+  border-radius: 999px;
+  margin-left: 0.25rem;
+}
+
+/* EDITAR: mismo look que "Refrescar" */
+.catalog-table .btnEditarProceso {
+  background: #111827 !important;
+  color: #e5e7eb !important;
+  border: 1px solid #1f2937;
+  border-radius: 999px;
+}
+
+.catalog-table .btnEditarProceso:hover {
+  background: #1f2937 !important;
+}
+
+/* ELIMINAR: rojo */
+.catalog-table .btnEliminarProceso {
+  background: #dc2626 !important;
+  color: #ffffff !important;
+  border: 1px solid #b91c1c;
+  border-radius: 999px;
+}
+
+.catalog-table .btnEliminarProceso:hover {
+  background: #b91c1c !important;
+}

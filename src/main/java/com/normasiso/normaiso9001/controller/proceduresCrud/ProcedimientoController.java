@@ -2,6 +2,7 @@ package com.normasiso.normaiso9001.controller.proceduresCrud;
 
 import com.normasiso.normaiso9001.dto.DashboardVM;
 import com.normasiso.normaiso9001.dto.proceduresCrud.ProcedimientoListaDTO;
+import com.normasiso.normaiso9001.dto.proceduresCrud.TipoDocDTO;   // 👈 IMPORTANTE
 import com.normasiso.normaiso9001.repository.dashboard.DashboardRepository;
 import com.normasiso.normaiso9001.repository.proceduresCrud.ProcedimientoRepository;
 import com.normasiso.normaiso9001.security.login.AppUserDetails;
@@ -27,42 +28,45 @@ public class ProcedimientoController {
 
     // 🔹 Vista principal (tabla)
     @GetMapping
-public String vistaProcedimientos(Model model,
-                                  @AuthenticationPrincipal AppUserDetails auth) {
+    public String vistaProcedimientos(Model model,
+                                      @AuthenticationPrincipal AppUserDetails auth) {
 
-    String username = auth.getUsername();  // en pantalla se ve ITM66554
+        String username = auth.getUsername();  // ITM66554
 
-    DashboardVM vm = dashboardRepository.buildDashboard(username);
-    model.addAttribute("vm", vm);
+        // ===== info topbar / dashboard =====
+        DashboardVM vm = dashboardRepository.buildDashboard(username);
+        model.addAttribute("vm", vm);
 
-    String tipoUsuario = auth.getTipoUsuario();
-    boolean primerInicio = auth.isPrimerInicioSesion();
-    model.addAttribute("tipoUsuario", tipoUsuario);
-    model.addAttribute("primerInicioSesion", primerInicio);
+        String tipoUsuario = auth.getTipoUsuario();
+        boolean primerInicio = auth.isPrimerInicioSesion();
+        model.addAttribute("tipoUsuario", tipoUsuario);
+        model.addAttribute("primerInicioSesion", primerInicio);
 
-    if (primerInicio) {
-        return "redirect:/onboarding";
+        if (primerInicio) {
+            return "redirect:/onboarding";
+        }
+
+        // ===== tabla de procedimientos =====
+        List<ProcedimientoListaDTO> lista =
+                procedimientoRepository.listarProcedimientos(username);
+        model.addAttribute("procedimientos", lista);
+
+        // ===== opciones del select de tipo_doc ===== 👇
+        List<TipoDocDTO> tiposDoc =
+                procedimientoRepository.listarTiposDocumento(username);
+        model.addAttribute("tiposDoc", tiposDoc);
+
+        return "proceduresCrud/proceduresAdmin";
     }
 
-    // 👇 AQUÍ: usamos solo el username, el repo ya trae schema fijo
-    List<ProcedimientoListaDTO> lista =
-            procedimientoRepository.listarProcedimientos(username);
-
-    model.addAttribute("procedimientos", lista);
-
-    return "proceduresCrud/proceduresAdmin";
-}
-
-
     // 🔹 Endpoint AJAX búsqueda en tiempo real
-   @GetMapping("/buscar")
-@ResponseBody
-public List<ProcedimientoListaDTO> buscarProcedimientos(
-        @RequestParam("q") String q,
-        @AuthenticationPrincipal AppUserDetails auth) {
+    @GetMapping("/buscar")
+    @ResponseBody
+    public List<ProcedimientoListaDTO> buscarProcedimientos(
+            @RequestParam("q") String q,
+            @AuthenticationPrincipal AppUserDetails auth) {
 
-    String username = auth.getUsername();
-    return procedimientoRepository.buscarProcedimientos(username, q);
-}
-
+        String username = auth.getUsername();
+        return procedimientoRepository.buscarProcedimientos(username, q);
+    }
 }

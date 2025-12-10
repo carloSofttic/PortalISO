@@ -1,6 +1,8 @@
 package com.normasiso.normaiso9001.repository.proceduresCrud;
 
 import com.normasiso.normaiso9001.dto.proceduresCrud.ProcedimientoListaDTO;
+import com.normasiso.normaiso9001.dto.proceduresCrud.TipoDocDTO;
+
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -128,5 +130,26 @@ public class ProcedimientoRepository {
                 sql,
                 new ProcedimientoRowMapper(),
                 username, like, like, like);
+    }
+
+    private static class TipoDocRowMapper implements RowMapper<TipoDocDTO> {
+        @Override
+        public TipoDocDTO mapRow(ResultSet rs, int rowNum) throws SQLException {
+            TipoDocDTO dto = new TipoDocDTO();
+            dto.setIdTipoDoc(rs.getLong("id_tipodoc"));
+            dto.setTipoDocumento(rs.getString("tipo_documento"));
+            dto.setCodigoTipoDoc(rs.getString("codigo_tipodoc"));
+            return dto;
+        }
+    }
+
+    public List<TipoDocDTO> listarTiposDocumento(String username) {
+        String schema = obtenerSchemaPorUsuario(username);
+
+        String sql = "SELECT id_tipodoc, tipo_documento, codigo_tipodoc " +
+                "FROM " + schema + ".tipo_doc " +
+                "ORDER BY codigo_tipodoc";
+
+        return jdbcTemplate.query(sql, new TipoDocRowMapper());
     }
 }

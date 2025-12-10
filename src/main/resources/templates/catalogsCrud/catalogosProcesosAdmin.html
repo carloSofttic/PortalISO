@@ -13,7 +13,7 @@
   <!-- Mismo CSS del dashboard -->
   <link rel="stylesheet" th:href="@{/css/dashboard.css}">
   <!-- Estilos específicos SOLO para esta pantalla de usuarios -->
-  <link rel="stylesheet" th:href="@{/css/usuariosAdmin.css}">
+  <link rel="stylesheet" th:href="@{/css/catalogoProcesosAdmin.css}">
 </head>
 
 <body>
@@ -68,7 +68,7 @@
               </a>
 
             </div>
-          
+
             <!-- Trigger del submenú -->
             <a href="javascript:void(0)" class="item submenu-toggle3">
               <span class="icon">📝</span>
@@ -79,26 +79,26 @@
             <!-- Submenú -->
             <div class="submenu" id="submenu-crear-catalogos">
 
-              <a href="/licencias" class="item">
+              <a href="/admin/catalogoProcesos" class="item">
                 <span class="icon">🎫</span>
                 <span class="text">Catalogo de procesos</span>
               </a>
 
-              <a href="/licencias" class="item">
+              <a href="/admin/catalogoDocumentos" class="item">
                 <span class="icon">🎫</span>
                 <span class="text">Catalogo de documentos</span>
               </a>
 
             </div>
           </div>
-          
+
 
           <a href="/licencias" class="item">
             <span class="icon">🎫</span>
             <span class="text">Producción</span>
           </a>
 
-          
+
 
           <a href="#" class="item" th:classappend="${active=='admin' ? ' active' : ''}">
             <span class="icon">🛠️</span>
@@ -194,7 +194,7 @@
       <!-- TOPBAR -->
       <header class="topbar">
         <div class="topbar-left">
-          <span class="topbar-title">Administración de usuarios</span>
+          <span class="topbar-title">Catalogo de Procesos</span>
         </div>
 
         <div class="topbar-right">
@@ -260,116 +260,103 @@
       </header>
 
       <!-- CONTENIDO -->
+
       <div class="content-wrap">
 
         <div th:if="${ok}" class="alert success" th:text="${ok}"></div>
         <div th:if="${error}" class="alert error" th:text="${error}"></div>
 
-        <div class="card card-lg users-page">
-          <div class="title">Administración de Usuarios</div>
-          <div class="subtitle">Gestiona los usuarios de la compañía.</div>
+        <div class="card card-lg">
+          <div class="title">Catalogo de Procesos</div>
+          <div class="subtitle">
+            Gestiona el catálogo de procesos de la compañía. <br>Agrega, Elimina o Modifica los procesos predeterminados acorde a los utilizados dentro de la empresa
+          </div>
 
-          <!-- Toolbar -->
-          <div class="users-toolbar">
-            <input id="buscador" type="text" placeholder="Buscar por nombre, usuario, correo, rol...">
-            <button class="btn btn-secondary" id="btnRefrescar">Refrescar</button>
-            <button class="btn btn-primary" id="btnNuevo">+ Nuevo usuario</button>
+          <!-- 🔹 Formulario compacto para alta / edición rápida -->
+          <form id="formProceso" class="process-form">
+            <input type="hidden" id="idProceso">
+
+            <div class="process-form-group">
+              <label class="process-label" for="nombreProceso">Nombre del proceso</label>
+              <input type="text" id="nombreProceso" name="nombreProceso" class="process-input" required>
+            </div>
+
+            <div class="process-form-group">
+              <label class="process-label" for="codigoProceso">Código</label>
+              <input type="text" id="codigoProceso" name="codigoProceso" class="process-input" required>
+            </div>
+
+            <div class="process-form-actions">
+              <button type="submit" class="btn">Guardar</button>
+            </div>
+
+            <div id="errorForm" class="process-error"></div>
+          </form>
+
+          <!-- 🔹 Barra de búsqueda y botones auxiliares -->
+
+          <!-- Toolbar: buscador + botón refrescar -->
+          <div class="catalog-toolbar">
+            <input id="buscarProceso" type="text" class="form-input catalog-search"
+              placeholder="Buscar por nombre o código…">
+
+            <button type="button" class="btn btn-secondary" id="btnRefrescarProcesos">
+              Refrescar
+            </button>
           </div>
 
           <!-- Tabla -->
-          <div class="table-wrap">
-            <table class="table">
+          <div class="catalog-table-wrapper">
+            <table class="catalog-table">
               <thead>
                 <tr>
-                  <th>ID Usuario</th>
-                  <th>Nombre completo</th>
-                  <th>Correo</th>
-                  <th>Rol</th>
-                  <th>Fecha creación</th>
-                  <th style="width: 130px;">Acciones</th>
+                  <th style="width: 100px;">ID Proceso</th>
+                  <th style="width: 120px;">Código</th>
+                  <th>Nombre del proceso</th>
+                 
+                  <th style="width: 140px; text-align:center;">Acciones</th>
                 </tr>
               </thead>
-              <tbody id="tbodyUsuarios">
-                <!-- se llena por JS -->
+              <tbody id="tbodyProcesos">
+                <tr th:each="p : ${procesos}">
+                  <td th:text="${p.idProceso}">1</td>
+                  <td th:text="${p.codigoProceso}">PR</td>
+                  <td th:text="${p.nombreProceso}">Producción</td>
+                 
+                  <td class="col-acciones">
+                    <button type="button" class="btn btn-secondary btn-xs btnEditarProceso"
+                      th:attr="data-id=${p.idProceso}">
+                      Editar
+                    </button>
+                    <button type="button" class="btn btn-danger btn-xs btnEliminarProceso"
+                      th:attr="data-id=${p.idProceso}">
+                      Eliminar
+                    </button>
+                  </td>
+                </tr>
+
+                <tr th:if="${#lists.isEmpty(procesos)}">
+                  <td colspan="5" class="catalog-empty">
+                    No se encontraron procesos registrados.
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
+
+
         </div>
-      </div> <!-- /content-wrap -->
+      </div>
     </main>
   </div>
 
-  <!-- MODAL alta / edición -->
-  <div class="modal-backdrop" id="modalBackdrop">
-    <div class="modal">
-      <div class="modal-header">
-        <h2 id="modalTitulo">Nuevo usuario</h2>
-        <button class="btn btn-secondary" type="button" id="btnCerrarModal">X</button>
-      </div>
-      <form id="formUsuario">
-        <div class="modal-body">
-          <input type="hidden" id="idUsuario">
-          <input type="hidden" id="idMiembro">
 
-          <label>
-            Nombre
-            <input type="text" id="nombre" required>
-          </label>
-
-          <label>
-            Apellido paterno
-            <input type="text" id="apPaterno" required>
-          </label>
-
-          <label>
-            Apellido materno
-            <input type="text" id="apMaterno" required>
-          </label>
-
-          <label>
-            Teléfono
-            <input type="text" id="telefono" maxlength="15">
-          </label>
-
-          <label>
-            Correo electrónico
-            <input type="email" id="email" required>
-          </label>
-
-          
-
-          <label>
-            Rol / Tipo de usuario
-            <select id="tipoUsuario" required>
-              <option value="">Seleccione...</option>
-              <option value="ADMINISTRADOR">ADMINISTRADOR</option>
-              <option value="SGI">SGI</option>
-              <option value="LIDER PRODUCCION">LÍDER PRODUCCIÓN</option>
-              <option value="LIDER SOPORTE TECNICO">LÍDER SOPORTE TÉCNICO</option>
-            </select>
-          </label>
-
-          <label>
-            Password (solo alta)
-            <input type="password" id="password">
-          </label>
-        </div>
-
-        <div id="errorForm" class="error-msg"></div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" id="btnCancelar">Cancelar</button>
-          <button type="submit" class="btn btn-primary" id="btnGuardar">Guardar</button>
-        </div>
-      </form>
-    </div>
-  </div>
 
   <!-- JS del dashboard (sidebar, menús, etc.) -->
   <script src="/js/dashboard.js"></script>
   <!-- JS específico de usuarios -->
-  <script src="/js/usersCrud/usuariosAdmin.js"></script>
-  
+  <script src="/js/catalogsCrud/catalogoProcesosAdmin.js"></script>
+
   <!--<script src="/js/seguridad-global.js"></script>-->
 </body>
 

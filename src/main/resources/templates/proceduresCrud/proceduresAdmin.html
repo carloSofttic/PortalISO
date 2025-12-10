@@ -87,7 +87,7 @@
             <!-- TOPBAR -->
             <header class="topbar">
                 <div class="topbar-left">
-                    <span class="topbar-title">Procedimientos</span>
+                    <span class="topbar-title">Documentos</span>
                 </div>
 
                 <div class="topbar-right">
@@ -160,9 +160,9 @@
                 <div th:if="${error}" class="alert error" th:text="${error}"></div>
 
                 <div class="card card-lg">
-                    <div class="title">Gestión de procedimientos</div>
+                    <div class="title">Gestión de documentos</div>
                     <div class="subtitle">
-                        Visualiza, busca y administra los procedimientos que tienes asignados.
+                        Visualiza, busca y administra los documentos que tienes asignados.
                     </div>
 
                     <!-- Barra superior: buscador + botón nuevo -->
@@ -171,7 +171,7 @@
                             placeholder="Buscar por código, nombre o proceso...">
 
                         <button type="button" class="btn" id="btnNuevoProcedimiento">
-                            + Nuevo procedimiento
+                            + Nuevo documento
                         </button>
                     </div>
 
@@ -183,7 +183,7 @@
                                     <th>Proceso</th>
                                     <th>Tipo Documento</th>
                                     <th>Código</th>
-                                    
+
                                     <th>Nombre del procedimiento</th>
                                     <th>Emisión</th>
                                     <th>Vencimiento</th>
@@ -256,7 +256,7 @@
         <div class="modal-card">
 
             <div class="modal-header">
-                <h3 id="modalTitulo">Nuevo procedimiento</h3>
+                <h3 id="modalTitulo">Nuevo documento</h3>
                 <button type="button" class="modal-close" id="btnCerrarModal">×</button>
             </div>
 
@@ -268,16 +268,17 @@
                     <div class="form-row two-cols">
                         <div class="form-group">
                             <label class="form-label">Codigo del documento</label>
-                            <select name="cars" id="cars">
-                                <option value="volvo">Selecciona</option>
-                                <option value="volvo">Procedimiento (PP)</option>
-                                <option value="saab">Instructivo (IT)</option>
-                                <option value="mercedes">Formato (F)</option>
-                                <option value="audi">Registro (R)</option>
-                                <option value="audi">Control (C)</option>
-                                <option value="audi">Organización (O)</option>
-                                <option value="audi">Otro</option>
+                            <select id="tipoDocumento" name="idTipoDoc" class="form-input select-input">
+                                <option value="">Selecciona</option>
+
+                                <option th:each="t : ${tiposDoc}" th:value="${t.idTipoDoc}"
+                                    th:text="${t.tipoDocumento + ' (' + t.codigoTipoDoc + ')'}">
+                                    Procedimiento (PP)
+                                </option>
+
+                                
                             </select>
+
                         </div>
                         <div class="form-group">
                             <label class="form-label">Nombre del documento *</label>

@@ -38,22 +38,52 @@ function setupSidebarToggle() {
 function setupSubmenuCrearArchivo() {
   const toggle  = document.querySelector(".submenu-toggle");
   const submenu = document.getElementById("submenu-crear-archivo");
+
+  const toggle2  = document.querySelector(".submenu-toggle2");
+  const submenu2 = document.getElementById("submenu-crear-usuarios");
+
+  const toggle3  = document.querySelector(".submenu-toggle3");
+  const submenu3 = document.getElementById("submenu-crear-catalogos");
+
   const sidebar = document.querySelector(".sidebar");
 
-  if (!toggle || !submenu) return;
+  // 1) Primer submenú
+  if (toggle && submenu) {
+    toggle.addEventListener("click", (e) => {
+      e.preventDefault();
 
-  toggle.addEventListener("click", (e) => {
-    e.preventDefault();
+      if (sidebar && sidebar.classList.contains("collapsed")) return;
 
-    // Si el sidebar está colapsado, no abrimos el submenu
-    if (sidebar && sidebar.classList.contains("collapsed")) {
-      return;
-    }
+      submenu.classList.toggle("show");
+      toggle.classList.toggle("open");
+    });
+  }
 
-    submenu.classList.toggle("show");
-    toggle.classList.toggle("open");
-  });
+  // 2) Segundo submenú
+  if (toggle2 && submenu2) {
+    toggle2.addEventListener("click", (e) => {
+      e.preventDefault();
+
+      if (sidebar && sidebar.classList.contains("collapsed")) return;
+
+      submenu2.classList.toggle("show");
+      toggle2.classList.toggle("open");
+    });
+  }
+
+  // 3) Tercer submenú
+  if (toggle3 && submenu3) {
+    toggle3.addEventListener("click", (e) => {
+      e.preventDefault();
+
+      if (sidebar && sidebar.classList.contains("collapsed")) return;
+
+      submenu3.classList.toggle("show");
+      toggle3.classList.toggle("open");
+    });
+  }
 }
+
 
 
 // ==========================================================
@@ -61,7 +91,7 @@ function setupSubmenuCrearArchivo() {
 // ==========================================================
 function setupMenuHandlers() {
   document.addEventListener("click", (event) => {
-    const userMenu       = document.querySelector(".user-menu");
+    const userMenu = document.querySelector(".user-menu");
     const notifContainer = document.querySelector(".notifications");
 
     // ----- Menú de usuario -----
@@ -91,10 +121,10 @@ function setupMenuHandlers() {
 // 3) SIDEBAR COLAPSABLE (ESCRITORIO)
 // ==========================================================
 function setupSidebarCollapse() {
-  const sidebar     = document.querySelector(".sidebar");
+  const sidebar = document.querySelector(".sidebar");
   const collapseBtn = document.querySelector(".sidebar-collapse-btn");
-  const submenu     = document.getElementById("submenu-crear-archivo");
-  const toggle      = document.querySelector(".submenu-toggle");
+  const submenu = document.getElementById("submenu-crear-archivo");
+  const toggle = document.querySelector(".submenu-toggle");
 
   if (!sidebar || !collapseBtn) return;
 

@@ -296,9 +296,10 @@ function renderTabla(usuarios) {
   usuarios.forEach(u => {
     const tr = document.createElement('tr');
 
-    const tdId = document.createElement('td');
-    tdId.textContent = u.idUsuario;
-    tr.appendChild(tdId);
+    const tdUser = document.createElement('td');
+   tdUser.textContent = u.username || '';
+   tr.appendChild(tdUser);
+
 
     const tdNombre = document.createElement('td');
     const nombreCompleto = `${u.nombre || ''} ${u.apPaterno || ''} ${u.apMaterno || ''}`.trim();
@@ -309,9 +310,7 @@ function renderTabla(usuarios) {
     tdEmail.textContent = u.email || u.emailMiembro || '';
     tr.appendChild(tdEmail);
 
-   // const tdUser = document.createElement('td');
-   // tdUser.textContent = u.username || '';
-   // tr.appendChild(tdUser);
+   
 
     const tdRol = document.createElement('td');
     const spanRol = document.createElement('span');

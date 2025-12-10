@@ -42,23 +42,61 @@
              ========================================== -->
         <th:block th:if="${tipoUsuario == 'ADMINISTRADOR' or tipoUsuario == 'SGI'}">
 
-          <!-- Gestión de usuarios -->
-          <a th:href="@{/admin/usuarios}" class="item">
-            <span class="icon">👥</span>
-            <span class="text">Administrar usuarios</span>
-          </a>
+          <!-- Grupo Crear archivo + submenu -->
+          <div class="item-group">
+            <!-- Trigger del submenú -->
+            <a href="javascript:void(0)" class="item submenu-toggle2">
+              <span class="icon">📝</span>
+              <span class="text">Usuarios y Licencias</span>
+              <span class="arrow">▾</span>
+            </a>
 
-          <!-- Gestión de licencias -->
+            <!-- Submenú -->
+            <div class="submenu" id="submenu-crear-usuarios">
+
+              <!-- Gestión de usuarios -->
+              <a th:href="@{/admin/usuarios}" class="item">
+                <span class="icon">👥</span>
+                <span class="text">Administrar usuarios</span>
+              </a>
+
+              <!-- Gestión de licencias -->
+              <a href="/licencias" class="item">
+                <span class="icon">🎫</span>
+                <span class="text">Asignar licencias</span>
+              </a>
+
+            </div>
+          
+            <!-- Trigger del submenú -->
+            <a href="javascript:void(0)" class="item submenu-toggle3">
+              <span class="icon">📝</span>
+              <span class="text">Catalogos</span>
+              <span class="arrow">▾</span>
+            </a>
+
+            <!-- Submenú -->
+            <div class="submenu" id="submenu-crear-catalogos">
+
+              <a href="/admin/catalogoProcesos" class="item">
+                <span class="icon">🎫</span>
+                <span class="text">Catalogo de procesos</span>
+              </a>
+
+              <a href="/admin/catalogoDocumentos" class="item">
+                <span class="icon">🎫</span>
+                <span class="text">Catalogo de documentos</span>
+              </a>
+
+            </div>
+          </div>
+
           <a href="/licencias" class="item">
             <span class="icon">🎫</span>
-            <span class="text">Asignar licencias</span>
+            <span class="text">Producción</span>
           </a>
 
-          <!-- Módulos por área (solo iconos + texto, links a definir) -->
-          <a href="#" class="item" th:classappend="${active=='dg' ? ' active' : ''}">
-            <span class="icon">🏛️</span>
-            <span class="text">Dirección General</span>
-          </a>
+
 
           <a href="#" class="item" th:classappend="${active=='admin' ? ' active' : ''}">
             <span class="icon">🛠️</span>
@@ -142,7 +180,7 @@
 
             <!-- Submenú -->
             <div class="submenu" id="submenu-crear-archivo">
-              <a  th:href="@{/procedimientos}" class="submenu-item">
+              <a th:href="@{/procedimientos}" class="submenu-item">
                 📝 Crear procedimiento
               </a>
               <a href="/archivos/formato/nuevo" class="submenu-item">
